@@ -1,0 +1,1333 @@
+{
+  "+919034317581": {
+    "name": "udhav sharma",
+    "age": "22",
+    "email": "udhavsharma754@gmail.com",
+    "address": "Old Housing board Colony, Panipat, Haryana, 132100, India",
+    "lat": 29.39816017872761,
+    "lng": 76.97557745784377,
+    "cart": [],
+    "orders": [
+      {
+        "id": "ORD-1777544394239",
+        "placedAt": "2026-04-30T10:19:54.239Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "deliveryDistanceKm": null,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777544332625",
+        "placedAt": "2026-04-30T10:18:52.625Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "deliveryDistanceKm": null,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777542690198",
+        "placedAt": "2026-04-30T09:51:30.198Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "deliveryDistanceKm": null,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777454655857",
+        "placedAt": "2026-04-29T09:24:15.857Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "deliveryDistanceKm": 1.1612,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777454010344",
+        "placedAt": "2026-04-29T09:13:30.344Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedPartnerName": "udhav sharma",
+        "assignedAt": "2026-04-29T09:13:38.919Z",
+        "pickedUpAt": "2026-04-29T09:13:40.711Z",
+        "deliveryOtp": "8942",
+        "deliveredAt": "2026-04-29T09:13:48.835Z",
+        "deliveryDistanceKm": 1.1,
+        "partnerEarning": 26
+      },
+      {
+        "id": "ORD-1777452575624",
+        "placedAt": "2026-04-29T08:49:35.624Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777452404443",
+        "placedAt": "2026-04-29T08:46:44.443Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777452340461",
+        "placedAt": "2026-04-29T08:45:40.461Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "subtotal": 100,
+        "deliveryFee": 30,
+        "platformFee": 0,
+        "totalPrice": 130,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777382872208",
+        "placedAt": "2026-04-28T13:27:52.208Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedPartnerName": "udhav sharma",
+        "assignedAt": "2026-04-29T08:33:31.754Z",
+        "pickedUpAt": "2026-04-29T08:34:01.045Z",
+        "deliveryOtp": "5634",
+        "deliveredAt": "2026-04-29T08:34:15.856Z"
+      },
+      {
+        "id": "ORD-1777382621828",
+        "placedAt": "2026-04-28T13:23:41.828Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma751@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777280428832",
+        "placedAt": "2026-04-27T09:00:28.832Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 2,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 200
+          }
+        ],
+        "totalPrice": 200,
+        "totalCount": 2
+      },
+      {
+        "id": "ORD-1777214568601",
+        "placedAt": "2026-04-26T14:42:48.601Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedPartnerName": "udhav sharma",
+        "assignedAt": "2026-04-26T14:42:59.233Z",
+        "pickedUpAt": "2026-04-26T14:43:03.132Z",
+        "deliveryOtp": "2657",
+        "deliveredAt": "2026-04-26T14:43:49.455Z"
+      },
+      {
+        "id": "ORD-1777213776606",
+        "placedAt": "2026-04-26T14:29:36.606Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T14:29:49.020Z",
+        "pickedUpAt": "2026-04-26T14:30:16.800Z",
+        "deliveryOtp": "8096",
+        "deliveredAt": "2026-04-26T14:38:21.272Z"
+      },
+      {
+        "id": "ORD-1777213338743",
+        "placedAt": "2026-04-26T14:22:18.743Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T14:22:28.444Z",
+        "pickedUpAt": "2026-04-26T14:22:35.477Z",
+        "deliveryOtp": "4476",
+        "deliveredAt": "2026-04-26T14:23:18.580Z"
+      },
+      {
+        "id": "ORD-1777197438364",
+        "placedAt": "2026-04-26T09:57:18.364Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T09:57:27.510Z",
+        "pickedUpAt": "2026-04-26T09:57:30.549Z",
+        "deliveryOtp": "7391",
+        "deliveredAt": "2026-04-26T10:03:00.772Z"
+      },
+      {
+        "id": "ORD-1777183080719",
+        "placedAt": "2026-04-26T05:58:00.719Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T09:26:44.101Z",
+        "pickedUpAt": "2026-04-26T09:41:54.661Z",
+        "deliveredAt": "2026-04-26T09:42:06.457Z"
+      },
+      {
+        "id": "ORD-1777182917672",
+        "placedAt": "2026-04-26T05:55:17.672Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T05:55:51.710Z",
+        "pickedUpAt": "2026-04-26T05:55:57.616Z",
+        "deliveredAt": "2026-04-26T05:55:58.836Z"
+      },
+      {
+        "id": "ORD-1777182847452",
+        "placedAt": "2026-04-26T05:54:07.452Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T09:26:59.771Z",
+        "pickedUpAt": "2026-04-26T09:43:19.068Z",
+        "deliveredAt": "2026-04-26T09:43:36.217Z"
+      },
+      {
+        "id": "ORD-1777181693731",
+        "placedAt": "2026-04-26T05:34:53.731Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T05:35:03.368Z",
+        "pickedUpAt": "2026-04-26T05:35:12.211Z",
+        "deliveredAt": "2026-04-26T05:35:15.073Z"
+      },
+      {
+        "id": "ORD-1777181474545",
+        "placedAt": "2026-04-26T05:31:14.545Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 3,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 300
+          }
+        ],
+        "totalPrice": 300,
+        "totalCount": 3,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T05:31:22.823Z",
+        "pickedUpAt": "2026-04-26T05:34:09.922Z",
+        "deliveredAt": "2026-04-26T05:34:33.580Z"
+      },
+      {
+        "id": "ORD-1777180909005",
+        "placedAt": "2026-04-26T05:21:49.005Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T05:22:03.116Z",
+        "pickedUpAt": "2026-04-26T05:22:20.210Z",
+        "deliveredAt": "2026-04-26T05:30:57.830Z"
+      },
+      {
+        "id": "ORD-1777180478385",
+        "placedAt": "2026-04-26T05:14:38.386Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              },
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              },
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 201
+          }
+        ],
+        "totalPrice": 201,
+        "totalCount": 3,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-26T05:15:07.484Z",
+        "pickedUpAt": "2026-04-26T05:16:35.226Z",
+        "deliveredAt": "2026-04-26T05:17:00.462Z"
+      },
+      {
+        "id": "ORD-1777134076251",
+        "placedAt": "2026-04-25T16:21:16.251Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-25T16:21:26.015Z",
+        "pickedUpAt": "2026-04-25T16:22:10.860Z",
+        "deliveredAt": "2026-04-25T16:22:34.911Z"
+      },
+      {
+        "id": "ORD-1777133537173",
+        "placedAt": "2026-04-25T16:12:17.173Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-25T16:12:30.969Z",
+        "pickedUp": false,
+        "pickedUpAt": "2026-04-25T16:19:40.956Z",
+        "deliveredAt": "2026-04-25T16:20:48.214Z"
+      },
+      {
+        "id": "ORD-1777132997369",
+        "placedAt": "2026-04-25T16:03:17.369Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-25T16:03:34.860Z",
+        "deliveredAt": "2026-04-25T16:03:42.358Z"
+      },
+      {
+        "id": "ORD-1777129690804",
+        "placedAt": "2026-04-25T15:08:10.804Z",
+        "status": "out_for_delivery",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1777129650333-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "56.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777020615763",
+        "placedAt": "2026-04-24T08:50:15.763Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1
+      },
+      {
+        "id": "ORD-1777020529361",
+        "placedAt": "2026-04-24T08:48:49.361Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-25T12:55:03.797Z",
+        "deliveredAt": "2026-04-25T12:55:54.215Z"
+      },
+      {
+        "id": "ORD-1777020444176",
+        "placedAt": "2026-04-24T08:47:24.176Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776614226382-default-default",
+                "name": "test 2 ",
+                "price": 1,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "17.png"
+              }
+            ],
+            "subtotal": 1
+          }
+        ],
+        "totalPrice": 1,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedAt": "2026-04-25T12:54:57.427Z",
+        "deliveredAt": "2026-04-25T16:02:49.694Z"
+      },
+      {
+        "id": "ORD-1777019877970",
+        "placedAt": "2026-04-24T08:37:57.970Z",
+        "status": "confirmed",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "udhav sharma",
+          "phone": "+919034317581",
+          "email": "udhavsharma754@gmail.com",
+          "address": "Old Housing board Colony, Panipat, Haryana, 132100, India"
+        },
+        "items": [
+          {
+            "key": "1776614226382-default-default",
+            "name": "test 2 ",
+            "price": 1,
+            "quantity": 4,
+            "selectedColor": null,
+            "selectedSize": null,
+            "imageId": "17.png"
+          }
+        ],
+        "totalPrice": 4,
+        "totalCount": 4
+      }
+    ],
+    "reviews": [
+      {
+        "id": "REV-1777544484433",
+        "type": "product",
+        "orderId": "ORD-1777544394239",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "productId": "1776605001008",
+        "productName": "testt",
+        "productImage": "d2.png",
+        "reviewerName": "udhav sharma",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "Nice product",
+        "createdAt": "2026-04-30T10:21:24.433Z"
+      },
+      {
+        "id": "REV-1777544478959",
+        "type": "shop",
+        "orderId": "ORD-1777544394239",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "reviewerName": "udhav sharma",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "Nice love it",
+        "createdAt": "2026-04-30T10:21:18.959Z"
+      },
+      {
+        "id": "REV-1777382825847",
+        "type": "shop",
+        "orderId": "ORD-1777382621828",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "reviewerName": "udhav sharma",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "Nice love the exp",
+        "createdAt": "2026-04-28T13:27:05.847Z"
+      },
+      {
+        "id": "REV-1777129743963",
+        "type": "shop",
+        "orderId": "ORD-1777129690804",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "reviewerName": "udhav sharma",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "good shop",
+        "createdAt": "2026-04-25T15:09:03.963Z"
+      },
+      {
+        "id": "REV-1777112794866",
+        "type": "product",
+        "orderId": "ORD-1777020615763",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "productId": "1776614226382",
+        "productName": "test 2 ",
+        "productImage": "17.png",
+        "reviewerName": "udhav sharma",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "so good best",
+        "createdAt": "2026-04-25T10:26:34.866Z"
+      },
+      {
+        "id": "REV-1777095036192",
+        "orderId": "ORD-1777020615763",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "reviewerPhone": "+919034317581",
+        "rating": 5,
+        "text": "i really like product quality top notch excellence",
+        "createdAt": "2026-04-25T05:30:36.192Z"
+      }
+    ],
+    "password": "cr102102"
+  },
+  "+919896131577": {
+    "name": "praveen sharma",
+    "age": "18",
+    "email": "praveen@gmail.com",
+    "address": "Desraj Colony, Panipat, Haryana, 132100, India",
+    "lat": 29.397470108085194,
+    "lng": 76.97867216015582,
+    "password": "cr102102",
+    "orders": [
+      {
+        "id": "ORD-1777390840605",
+        "placedAt": "2026-04-28T15:40:40.605Z",
+        "status": "delivered",
+        "paymentMethod": "cod",
+        "customer": {
+          "name": "praveen sharma",
+          "phone": "+919896131577",
+          "email": "praveen@gmail.com",
+          "address": "Desraj Colony, Panipat, Haryana, 132100, India"
+        },
+        "shops": [
+          {
+            "shopId": "1776583007137",
+            "shopName": "panipat home decor",
+            "shopCategory": "Home & Garden",
+            "shopPhoto": "6c.jpg",
+            "shopAddress": "Desraj Colony, Panipat, Haryana, 132100, India",
+            "items": [
+              {
+                "key": "1776605001008-default-default",
+                "name": "testt",
+                "price": 100,
+                "quantity": 1,
+                "selectedColor": null,
+                "selectedSize": null,
+                "imageId": "d2.png"
+              }
+            ],
+            "subtotal": 100
+          }
+        ],
+        "totalPrice": 100,
+        "totalCount": 1,
+        "assignedPartner": "+919034317581",
+        "assignedPartnerName": "udhav sharma",
+        "assignedAt": "2026-04-28T15:42:29.023Z",
+        "pickedUpAt": "2026-04-28T15:43:14.026Z",
+        "deliveryOtp": "8268",
+        "deliveredAt": "2026-04-28T15:46:12.804Z"
+      }
+    ],
+    "cart": [],
+    "reviews": [
+      {
+        "id": "REV-1777391299363",
+        "type": "shop",
+        "orderId": "ORD-1777390840605",
+        "shopId": "1776583007137",
+        "shopName": "panipat home decor",
+        "shopPhoto": "6c.jpg",
+        "reviewerName": "praveen sharma",
+        "reviewerPhone": "+919896131577",
+        "rating": 5,
+        "text": "Nice shop",
+        "createdAt": "2026-04-28T15:48:19.363Z"
+      }
+    ]
+  }
+}

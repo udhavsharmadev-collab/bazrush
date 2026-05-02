@@ -1,0 +1,81 @@
+{
+  "products": [
+    {
+      "id": "1776605001008",
+      "shopId": "1776583007137",
+      "sellerPhone": "9034317581",
+      "name": "testt",
+      "category": "Accessories",
+      "sizes": [
+        "40x60"
+      ],
+      "colors": [
+        "red",
+        "green"
+      ],
+      "price": 100,
+      "mainImageId": "d2.png",
+      "imageIds": [],
+      "createdAt": "2026-04-19T13:23:21.008Z",
+      "stockQuantity": 1,
+      "stockStatus": "in_stock"
+    },
+    {
+      "id": "1776614226382",
+      "shopId": "1776583007137",
+      "sellerPhone": "9034317581",
+      "name": "test 2 ",
+      "category": "Sports",
+      "sizes": [],
+      "colors": [],
+      "price": 1,
+      "mainImageId": "17.png",
+      "imageIds": [],
+      "createdAt": "2026-04-19T15:57:06.382Z",
+      "stockQuantity": 0,
+      "stockStatus": "out_of_stock"
+    },
+    {
+      "id": "1777129650333",
+      "shopId": "1776583007137",
+      "sellerPhone": "9034317581",
+      "name": "testt",
+      "category": "Toys",
+      "sizes": [
+        "40x60"
+      ],
+      "colors": [
+        "red",
+        "green"
+      ],
+      "price": 100,
+      "stockQuantity": 0,
+      "stockStatus": "in_stock",
+      "mainImageId": "56.png",
+      "imageIds": [],
+      "createdAt": "2026-04-25T15:07:30.333Z"
+    },
+    {
+      "id": "1777542521441",
+      "shopId": "1776583007137",
+      "sellerPhone": "9034317581",
+      "name": "testt 32",
+      "category": "Toys",
+      "sizes": [
+        "40x60"
+      ],
+      "colors": [
+        "red",
+        "green"
+      ],
+      "price": 100,
+      "stockQuantity": 20,
+      "stockStatus": "in_stock",
+      "mainImageId": "56.png",
+      "imageIds": [
+        "62.jpg"
+      ],
+      "createdAt": "2026-04-30T09:48:41.442Z"
+    }
+  ]
+}

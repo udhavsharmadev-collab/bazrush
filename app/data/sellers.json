@@ -1,0 +1,185 @@
+{
+  "9034317581": {
+    "name": "Udhav sharma",
+    "age": "18",
+    "gstin": "111111111111111",
+    "password": "cr102102",
+    "confirmPassword": "cr102102",
+    "phoneNumber": "9034317581",
+    "email": "udhavsharma754@gmail.com",
+    "createdAt": "2026-04-19T07:15:38.597Z",
+    "shops": [
+      {
+        "id": "1776583007137",
+        "shopName": "panipat home decor",
+        "ownerName": "Udhav sharma",
+        "category": "Home & Garden",
+        "address": "Desraj Colony, Panipat, Haryana, 132100, India",
+        "mainPhotoId": "6c.jpg",
+        "photoIds": [
+          "6c.jpg",
+          "dd.jpg",
+          "",
+          ""
+        ],
+        "isOpen": true,
+        "timing": {
+          "Monday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Tuesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Wednesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Thursday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Friday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Saturday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Sunday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": true
+          }
+        },
+        "createdAt": "2026-04-19T07:16:47.203Z",
+        "updatedAt": "2026-04-30T10:05:36.018Z"
+      },
+      {
+        "id": "1776677467285",
+        "shopName": "panipat home decor enterprises",
+        "ownerName": "Udhav sharma",
+        "category": "Sports",
+        "address": "Desraj Colony, Panipat, Haryana, 132100, India",
+        "mainPhotoId": "dd.jpg",
+        "photoIds": [
+          "5a.jpg",
+          "",
+          "",
+          ""
+        ],
+        "isOpen": true,
+        "timing": {
+          "Monday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Tuesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Wednesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Thursday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Friday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Saturday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Sunday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": true
+          }
+        },
+        "createdAt": "2026-04-20T09:31:07.296Z"
+      },
+      {
+        "id": "1776767350013",
+        "shopName": "dream",
+        "ownerName": "Udhav sharma",
+        "category": "Sports",
+        "address": "Desraj Colony, Panipat, Haryana, 132100, India",
+        "mainPhotoId": "5a.jpg",
+        "photoIds": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "isOpen": true,
+        "timing": {
+          "Monday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Tuesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Wednesday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Thursday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Friday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Saturday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": false
+          },
+          "Sunday": {
+            "open": "09:00",
+            "close": "21:00",
+            "closed": true
+          }
+        },
+        "createdAt": "2026-04-21T10:29:10.067Z"
+      }
+    ],
+    "updatedAt": "2026-04-30T10:05:36.032Z"
+  },
+  "9896131577": {
+    "name": "praveen sharma",
+    "age": "30",
+    "gstin": "222222222222222",
+    "password": "praveen@123",
+    "confirmPassword": "praveen@123",
+    "phoneNumber": "9896131577",
+    "email": "praveenprajit@gmail.com",
+    "createdAt": "2026-04-19T09:47:55.134Z"
+  }
+}

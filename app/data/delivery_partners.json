@@ -1,0 +1,15 @@
+{
+  "+919034317581": {
+    "phoneNumber": "+919034317581",
+    "name": "udhav sharma",
+    "vehicleType": "bike",
+    "vehicleNumber": "HR 06 0445",
+    "isOnline": true,
+    "totalDeliveries": 19,
+    "totalEarnings": 376,
+    "createdAt": "2026-04-25T12:54:05.841Z",
+    "updatedAt": "2026-04-29T09:14:50.122Z",
+    "lat": 29.397417635691287,
+    "lng": 76.97862884336448
+  }
+}
