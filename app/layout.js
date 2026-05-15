@@ -20,7 +20,24 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Bazrush - Lightning Fast Delivery",
-  description: "Delivering essentials in 20-25 minutes. Futuristic speed with bold energy.",
+  description:
+    "Delivering essentials in 20-25 minutes. Futuristic speed with bold energy.",
+
+  applicationName: "Bazrush",
+
+  openGraph: {
+    title: "Bazrush - Lightning Fast Delivery",
+    description:
+      "Delivering essentials in 20-25 minutes. Futuristic speed with bold energy.",
+    siteName: "Bazrush",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Bazrush - Lightning Fast Delivery",
+    description:
+      "Delivering essentials in 20-25 minutes. Futuristic speed with bold energy.",
+  },
 };
 
 export default function RootLayout({ children }) {
