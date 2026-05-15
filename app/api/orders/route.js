@@ -19,7 +19,6 @@ export async function GET(request) {
     }
 
     // ── Delivery partner: ALL orders across every user ─────────────────────
-    // Used by DeliveryOrders.jsx polling — replaces the old /api/users hack
     if (all === 'true') {
       const users = await User.find(
         { 'orders.0': { $exists: true } },
@@ -154,8 +153,27 @@ export async function PATCH(request) {
     const order = user.orders.find(o => o.id === orderId);
     if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
 
+    // ── Capture pre-patch state for COD logic ────────────────────────────────
+    const wasDelivered = order.status === 'delivered';
+
     Object.assign(order, patch);
     await user.save();
+
+    // ── If just marked delivered + COD → increment partner's codCollected ────
+    const isCod = (m) => !!m && ['cod', 'cash'].some(k => m.toLowerCase().includes(k));
+
+    if (
+      !wasDelivered &&
+      patch.status === 'delivered' &&
+      isCod(order.paymentMethod) &&
+      order.assignedPartner
+    ) {
+      const DeliveryPartner = (await import('../../models/DeliveryPartner.js')).default;
+      await DeliveryPartner.findOneAndUpdate(
+        { phoneNumber: order.assignedPartner },
+        { $inc: { codCollected: order.totalPrice ?? 0 } }
+      );
+    }
 
     console.log(`✅ Order ${orderId} patched: ${Object.keys(patch).join(', ')}`);
     return Response.json({ success: true, orderId, order });

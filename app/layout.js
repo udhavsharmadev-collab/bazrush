@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { SellerProvider } from './context/SellerContext';
 import { DeliveryPartnerProvider } from './context/DeliveryPartnerContext'; 
+import { WishlistProvider } from "./context/Wishlistcontext"; // ← adjust path if needed
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Bazrush - Lightning Fast Delivery",
-  description: "Delivering essentials in 10-15 minutes. Futuristic speed with bold energy.",
+  description: "Delivering essentials in 20-25 minutes. Futuristic speed with bold energy.",
 };
 
 export default function RootLayout({ children }) {
@@ -33,11 +34,11 @@ export default function RootLayout({ children }) {
           <SellerProvider>
             <CartProvider>
               <DeliveryPartnerProvider> 
-                
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-
+                <WishlistProvider>
+                  <Navbar />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </WishlistProvider>
               </DeliveryPartnerProvider>
             </CartProvider>
           </SellerProvider>

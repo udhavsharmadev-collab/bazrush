@@ -24,6 +24,7 @@ export async function POST(request) {
       category: body.category,
       sizes: body.sizes || [],
       colors: body.colors || [],
+      colorImageIds: body.colorImageIds || [],   // ← added
       price: parseFloat(body.price),
       stockQuantity: body.stockQuantity || 0,
       stockStatus: body.stockStatus || 'out_of_stock',
@@ -50,6 +51,7 @@ export async function PUT(request) {
 
     Object.assign(product, {
       ...body,
+      colorImageIds: body.colorImageIds || product.colorImageIds || [],  // ← added
       stockQuantity: body.stockQuantity !== undefined ? parseInt(body.stockQuantity) || 0 : product.stockQuantity,
       stockStatus: body.stockStatus || product.stockStatus || 'out_of_stock',
     });
@@ -59,5 +61,22 @@ export async function PUT(request) {
   } catch (error) {
     console.error('Update product error:', error);
     return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    await connectDB();
+    const productId = request.nextUrl.searchParams.get('id');
+
+    if (!productId) return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+
+    const deleted = await Product.findOneAndDelete({ id: productId });
+    if (!deleted) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete product error:', error);
+    return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }

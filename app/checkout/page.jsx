@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { MapPin, User, Phone, Mail, ShoppingBag } from 'lucide-react';
+import PhoneAuthModal from '../components/auth/PhoneAuthModal';
 
 const PLATFORM_FEE = 0;
 
@@ -46,7 +47,6 @@ async function fetchShopById(shopId) {
   } catch { return null; }
 }
 
-// Groups cart items by shopId fetched from /api/products or product.shopId
 function groupByShop(cartItems) {
   const groups = {};
   for (const item of cartItems) {
@@ -163,56 +163,48 @@ const CheckoutPage = () => {
   const { cartItems, totalPrice, totalCount, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
 
-  // ── Instant Buy mode ──────────────────────────────────────────────────────
-  const [instantItem, setInstantItem] = useState(null);
-  const isInstantBuy = !!instantItem;
-
+  const [showAuthModal, setShowAuthModal] = useState(false);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') !== 'instant') return;
-    const stored = sessionStorage.getItem('instantBuy');
-    if (stored) {
-      try { setInstantItem(JSON.parse(stored)); } catch {}
-    }
-  }, []);
-
-  const activeItems = isInstantBuy ? [instantItem] : cartItems;
-  const activeTotal = isInstantBuy ? instantItem.product.price * instantItem.quantity : totalPrice;
-  const activeCount = isInstantBuy ? instantItem.quantity : totalCount;
+    if (!isAuthenticated) setShowAuthModal(true);
+  }, [isAuthenticated]);
 
   // ── Shop info ─────────────────────────────────────────────────────────────
   const [shopInfoMap, setShopInfoMap] = useState({});
 
   useEffect(() => {
-    if (!activeItems.length) return;
-    const shopGroups = groupByShop(activeItems);
+    if (!cartItems.length) return;
+    const shopGroups = groupByShop(cartItems);
     const shopIds = Object.keys(shopGroups).filter(id => id !== 'unknown');
     Promise.all(shopIds.map(fetchShopById)).then(results => {
       const map = {};
       shopIds.forEach((id, i) => { if (results[i]) map[id] = results[i]; });
       setShopInfoMap(map);
     });
-  }, [activeItems]);
+  }, [cartItems]);
 
   // ── Delivery fee ──────────────────────────────────────────────────────────
   const [deliveryFee, setDeliveryFee] = useState(30);
   const [distKm, setDistKm]           = useState(null);
   const [calcingFee, setCalcingFee]   = useState(false);
 
-  const grandTotal = activeTotal + deliveryFee + PLATFORM_FEE;
+  const grandTotal = totalPrice + deliveryFee + PLATFORM_FEE;
 
   // ── Form ──────────────────────────────────────────────────────────────────
-  const [form, setForm]               = useState({ name: '', phone: '', email: '', address: '' });
+  const [form, setForm]                   = useState({ name: '', phone: '', email: '', address: '' });
   const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [placing, setPlacing]         = useState(false);
-  const [placed, setPlaced]           = useState(false);
-  const [orderId, setOrderId]         = useState('');
-  const [finalTotal, setFinalTotal]   = useState(0);
-  const [stockError, setStockError]   = useState('');
+  const [placing, setPlacing]             = useState(false);
+  const [placed, setPlaced]               = useState(false);
+  const [orderId, setOrderId]             = useState('');
+  const [finalTotal, setFinalTotal]       = useState(0);
+  const [stockError, setStockError]       = useState('');
 
-  // Pre-fill from auth
+  // ── Autofill form once ────────────────────────────────────────────────────
+  const prefilledRef = useRef(false);
+
   useEffect(() => {
+    if (prefilledRef.current) return;
     if (!isAuthenticated || !user?.phone) return;
+    prefilledRef.current = true;
     setForm({
       name:    user.profile?.name    || user.name    || '',
       phone:   user.phone,
@@ -226,10 +218,10 @@ const CheckoutPage = () => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // Recalculate delivery fee on address change
+  // ── Delivery fee calculation ───────────────────────────────────────────────
   useEffect(() => {
     if (!form.address || form.address.length < 10) return;
-    const shopGroups  = groupByShop(activeItems);
+    const shopGroups  = groupByShop(cartItems);
     const firstShopId = Object.keys(shopGroups)[0];
     if (!firstShopId) return;
     const shopInfo = shopInfoMap[firstShopId];
@@ -258,14 +250,14 @@ const CheckoutPage = () => {
 
     const t = setTimeout(calc, 1000);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [form.address, activeItems, shopInfoMap]);
+  }, [form.address, shopInfoMap]);
 
   // ── Place order ───────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     setPlacing(true);
     setStockError('');
 
-    const shopGroups = groupByShop(activeItems);
+    const shopGroups = groupByShop(cartItems);
 
     const shops = Object.entries(shopGroups).map(([shopId, items]) => {
       const s = shopInfoMap[shopId];
@@ -273,24 +265,23 @@ const CheckoutPage = () => {
         shopId,
         shopName:     s?.shopName    || 'Unknown Shop',
         shopCategory: s?.category    || '',
-        // ── KEY FIX: seller ShopSchema stores photo as mainPhotoId ──
         shopPhoto:    s?.mainPhotoId || s?.shopPhoto || '',
         shopAddress:  s?.address     || '',
         items: items.map(item => ({
-          key:           item.key,
-          name:          item.product.name,
-          price:         item.product.price,
-          quantity:      item.quantity,
-          selectedColor: item.selectedColor,
-          selectedSize:  item.selectedSize,
-          imageId:       item.product.mainImageId,
-          productId:     item.product.id,
-        })),
+  key:           item.key,
+  name:          item.product.name,
+  price:         item.product.price,
+  quantity:      item.quantity,
+  selectedColor: item.selectedColor,
+  selectedSize:  item.selectedSize,
+  imageId: item.cartImageId ?? item.product.cartImageId ?? item.product.mainImageId,  // ← fixed
+  productId:     item.product.id,
+})),
         subtotal: items.reduce((s, i) => s + i.product.price * i.quantity, 0),
       };
     });
 
-    const flatItems = activeItems.map(item => ({
+    const flatItems = cartItems.map(item => ({
       productId: item.product.id,
       quantity:  item.quantity,
     }));
@@ -303,12 +294,12 @@ const CheckoutPage = () => {
       customer:           { ...form },
       shops,
       items:              flatItems,
-      subtotal:           activeTotal,
+      subtotal:           totalPrice,
       deliveryFee,
       deliveryDistanceKm: distKm,
       platformFee:        PLATFORM_FEE,
       totalPrice:         grandTotal,
-      totalCount:         activeCount,
+      totalCount,
     };
 
     try {
@@ -338,12 +329,24 @@ const CheckoutPage = () => {
 
     setOrderId(newOrder.id);
     setFinalTotal(grandTotal);
-    isInstantBuy ? sessionStorage.removeItem('instantBuy') : clearCart();
+    clearCart();
     setPlacing(false);
     setPlaced(true);
   };
 
-  // ── Early returns ─────────────────────────────────────────────────────────
+  // ── Auth modal ────────────────────────────────────────────────────────────
+  if (showAuthModal && !isAuthenticated) {
+    return (
+      <PhoneAuthModal
+        isOpen={true}
+        onClose={() => {
+          if (!isAuthenticated) router.back();
+          else setShowAuthModal(false);
+        }}
+      />
+    );
+  }
+
   if (placed) return (
     <OrderSuccessScreen
       orderId={orderId}
@@ -354,7 +357,7 @@ const CheckoutPage = () => {
     />
   );
 
-  if (!activeItems.length) return (
+  if (!cartItems.length) return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
       <div className="text-6xl mb-4">🛒</div>
       <p className="text-gray-400 text-sm mb-6">Your cart is empty</p>
@@ -364,7 +367,7 @@ const CheckoutPage = () => {
     </div>
   );
 
-  const shopGroups = groupByShop(activeItems);
+  const shopGroups = groupByShop(cartItems);
 
   const fields = [
     { key: 'name',    label: 'Full Name',       icon: User,   type: 'text',  placeholder: 'Your name'             },
@@ -380,7 +383,7 @@ const CheckoutPage = () => {
         <button onClick={() => router.back()} className="w-9 h-9 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-all text-lg">←</button>
         <h1 className="text-gray-900 font-black text-base flex-1">Checkout</h1>
         <span className="text-[10px] font-black px-3 py-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white shadow-md shadow-violet-200">
-          {activeCount} item{activeCount !== 1 ? 's' : ''}
+          {totalCount} item{totalCount !== 1 ? 's' : ''}
         </span>
       </div>
 
@@ -427,9 +430,6 @@ const CheckoutPage = () => {
               <ShoppingBag className="w-4 h-4 text-fuchsia-600" />
             </div>
             <p className="text-sm font-black text-gray-900">Order Summary</p>
-            {isInstantBuy && (
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-200 ml-auto">⚡ Buy Now</span>
-            )}
           </div>
           <div className="px-5 pb-4 space-y-5">
             {Object.entries(shopGroups).map(([shopId, items]) => {
@@ -451,7 +451,7 @@ const CheckoutPage = () => {
                     {items.map(item => (
                       <div key={item.key} className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                          <img src={`/images/${item.product.mainImageId}`} alt={item.product.name} className="w-full h-full object-contain p-1" onError={e => { e.target.style.opacity = '0.2'; }} />
+                          <img src={`/images/${item.product.cartImageId ?? item.product.mainImageId}`} alt={item.product.name} className="w-full h-full object-contain p-1" onError={e => { e.target.style.opacity = '0.2'; }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-black text-gray-900 capitalize truncate">{item.product.name}</p>
@@ -480,7 +480,7 @@ const CheckoutPage = () => {
             <div className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400 font-medium">Subtotal</span>
-                <span className="font-black text-gray-800">₹{activeTotal}</span>
+                <span className="font-black text-gray-800">₹{totalPrice}</span>
               </div>
               <div className="flex justify-between text-sm items-center">
                 <span className="text-gray-400 font-medium">
@@ -521,8 +521,7 @@ const CheckoutPage = () => {
           <div className="px-5 pb-5 space-y-2.5">
             {[
               { id: 'cod',  label: 'Cash on Delivery', emoji: '💵', sub: 'Pay when you receive' },
-              { id: 'upi',  label: 'UPI / QR',          emoji: '📲', sub: 'GPay, PhonePe, Paytm' },
-              { id: 'card', label: 'Card',               emoji: '💳', sub: 'Debit / Credit card'  },
+             
             ].map(pm => (
               <button
                 key={pm.id}

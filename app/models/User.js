@@ -9,7 +9,6 @@ const OrderItemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const OrderShopSchema = new mongoose.Schema({
-  // Primary fields used by OrdersPage / OrdersTab
   shopId:      String,
   shopName:    String,
   shopCategory: String,
@@ -18,17 +17,15 @@ const OrderShopSchema = new mongoose.Schema({
   subtotal:    Number,
   items:       [OrderItemSchema],
 
-  // Alternate field names that seller shops may use — stored here so they
-  // round-trip correctly even if checkout saves them under the seller's naming
-  id:          String,   // seller ShopSchema uses "id" not "shopId"
-  name:        String,   // in case shopName wasn't mapped
-  photo:       String,   // in case shopPhoto wasn't mapped
-  mainPhotoId: String,   // seller ShopSchema uses this for the photo
+  id:          String,
+  name:        String,
+  photo:       String,
+  mainPhotoId: String,
   category:    String,
   address:     String,
 }, {
   _id: false,
-  strict: false,  // never silently drop unknown fields — accept anything checkout saves
+  strict: false,
 });
 
 const OrderSchema = new mongoose.Schema({
@@ -41,7 +38,7 @@ const OrderSchema = new mongoose.Schema({
     address: String, lat: Number, lng: Number,
   },
   shops: [OrderShopSchema],
-  items: { type: Array, default: [] }, // flat item list some checkout flows save
+  items: { type: Array, default: [] },
   subtotal: Number,
   deliveryFee: Number,
   deliveryDistanceKm: mongoose.Schema.Types.Mixed,
@@ -53,13 +50,25 @@ const OrderSchema = new mongoose.Schema({
   assignedPartnerName: String,
 }, { _id: false });
 
+// Wishlist item — stores enough info to render the card without extra fetches
+const WishlistItemSchema = new mongoose.Schema({
+  id:          { type: String, required: true },
+  name:        String,
+  price:       Number,
+  category:    String,
+  mainImageId: String,
+  stockStatus: String,
+  shopId:      String,
+}, { _id: false });
+
 const UserSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true, unique: true },
   name: String, age: String, email: String,
   address: String, lat: Number, lng: Number, password: String,
-  cart: { type: Array, default: [] },
-  orders: { type: [OrderSchema], default: [] },
-  reviews: { type: Array, default: [] },
+  cart:      { type: Array,              default: [] },
+  orders:    { type: [OrderSchema],      default: [] },
+  reviews:   { type: Array,              default: [] },
+  wishlist:  { type: [WishlistItemSchema], default: [] }, // ← new
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

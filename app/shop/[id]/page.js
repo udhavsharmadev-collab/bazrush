@@ -12,6 +12,7 @@ const ShopPage = () => {
   const [todayDay, setTodayDay] = useState("");
   const [rating, setRating] = useState(null);
   const [productSearch, setProductSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +22,6 @@ const ShopPage = () => {
 
     const loadAll = async () => {
       try {
-        // ── Fetch shop from sellers API ──────────────────────────────────
         const sellersRes = await fetch('/api/sellers');
         const sellersData = await sellersRes.json();
         const sellers = sellersData.sellers || (Array.isArray(sellersData) ? sellersData : []);
@@ -38,13 +38,11 @@ const ShopPage = () => {
         }
         setShop(foundShop);
 
-        // ── Fetch products for this shop ─────────────────────────────────
         const productsRes = await fetch('/api/products');
         const productsData = await productsRes.json();
         const products = productsData.products || productsData || [];
         setShopProducts(products.filter((p) => p.shopId === id));
 
-        // ── Fetch ratings ────────────────────────────────────────────────
         await fetchShopRating(id);
       } catch (err) {
         console.error('Failed to load shop data:', err);
@@ -79,15 +77,19 @@ const ShopPage = () => {
     [shopProducts]
   );
 
+  const categories = useMemo(() => {
+    const cats = [...new Set(inStockProducts.map(p => p.category).filter(Boolean))];
+    return cats.sort();
+  }, [inStockProducts]);
+
   const filteredProducts = useMemo(() => {
     const q = productSearch.toLowerCase().trim();
-    if (!q) return inStockProducts;
-    return inStockProducts.filter(
-      (p) =>
-        p.name?.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q)
-    );
-  }, [inStockProducts, productSearch]);
+    return inStockProducts.filter((p) => {
+      const matchesSearch = !q || p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
+      const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [inStockProducts, productSearch, selectedCategory]);
 
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -207,30 +209,66 @@ const ShopPage = () => {
         {activeTab === "products" ? (
           <>
             {inStockProducts.length > 0 && (
-              <div className="relative mb-4">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-                <input
-                  type="text"
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                  placeholder={`Search in ${shop.shopName}…`}
-                  className="w-full pl-10 pr-10 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 text-sm font-medium outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-300 transition-all"
-                />
-                {productSearch && (
-                  <button
-                    onClick={() => setProductSearch("")}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none"
-                  >
-                    ×
-                  </button>
+              <>
+                {/* Search bar full width */}
+                <div className="relative mb-3">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder={`Search in ${shop.shopName}…`}
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 text-sm font-medium outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-300 transition-all"
+                  />
+                  {productSearch && (
+                    <button
+                      onClick={() => setProductSearch("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+
+                {/* Category pills */}
+                {categories.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
+                    <button
+                      onClick={() => setSelectedCategory('all')}
+                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+                        selectedCategory === 'all'
+                          ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
+                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-violet-300'
+                      }`}
+                    >
+                      All ({inStockProducts.length})
+                    </button>
+                    {categories.map(cat => {
+                      const count = inStockProducts.filter(p => p.category === cat).length;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border capitalize ${
+                            selectedCategory === cat
+                              ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
+                              : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-violet-300'
+                          }`}
+                        >
+                          {cat} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
-            {productSearch && (
+            {(productSearch || selectedCategory !== 'all') && (
               <p className="text-xs text-gray-400 font-medium mb-3">
-                {filteredProducts.length} result{filteredProducts.length !== 1 ? "s" : ""} for{" "}
-                <span className="text-violet-500 font-bold">"{productSearch}"</span>
+                {filteredProducts.length} result{filteredProducts.length !== 1 ? "s" : ""}
+                {productSearch && <> for <span className="text-violet-500 font-bold">"{productSearch}"</span></>}
+                {selectedCategory !== 'all' && <> in <span className="text-violet-500 font-bold capitalize">{selectedCategory}</span></>}
               </p>
             )}
 
@@ -239,16 +277,16 @@ const ShopPage = () => {
                 <div className="text-5xl mb-3">📦</div>
                 <p className="text-gray-400 text-sm">No products in this shop yet</p>
               </div>
-            ) : filteredProducts.length === 0 && productSearch ? (
+            ) : filteredProducts.length === 0 && (productSearch || selectedCategory !== 'all') ? (
               <div className="text-center py-16">
                 <div className="text-5xl mb-3">🔍</div>
                 <p className="text-gray-600 font-semibold text-sm mb-1">No products found</p>
-                <p className="text-gray-400 text-xs mb-4">Try a different keyword</p>
+                <p className="text-gray-400 text-xs mb-4">Try a different keyword or category</p>
                 <button
-                  onClick={() => setProductSearch("")}
+                  onClick={() => { setProductSearch(""); setSelectedCategory('all'); }}
                   className="px-5 py-2 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 text-white text-xs font-bold shadow-md shadow-purple-200"
                 >
-                  Clear Search
+                  Clear Filters
                 </button>
               </div>
             ) : (
@@ -286,7 +324,7 @@ const ShopPage = () => {
                   </div>
                 )}
 
-                {!productSearch && outOfStockProducts.length > 0 && (
+                {!productSearch && selectedCategory === 'all' && outOfStockProducts.length > 0 && (
                   <div className="mt-6">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="flex-1 h-px bg-gray-200" />

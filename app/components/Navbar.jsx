@@ -2,24 +2,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, User, ShoppingCart } from 'lucide-react';
+import { Menu, X, User, ShoppingCart, Heart } from 'lucide-react';
 import PhoneAuthModal from './auth/PhoneAuthModal';
 import { useAuth } from '../context/AuthContext';
 import { useSeller } from '../context/SellerContext';
 import { useCart } from '../context/CartContext';
 import { useDeliveryPartner } from '../context/DeliveryPartnerContext';
+import { useWishlist } from '../context/Wishlistcontext'; // ← adjust path if needed
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { isSellerAuthenticated, seller, logoutSeller } = useSeller();
   const { isPartnerAuthenticated, partner, logoutPartner } = useDeliveryPartner();
   const { totalCount } = useCart();
+  const { wishlistItems } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
-  // ✅ FIX: Stable handlers using state setter functions — no stale closure issues on mobile
   const openAuthModal = () => {
     setIsMobileMenuOpen(false);
     setShowAuthModal(true);
@@ -52,6 +53,18 @@ const Navbar = () => {
             {/* Desktop Right Side */}
             <div className="hidden md:flex items-center gap-3">
 
+              {/* Wishlist — only show for regular users (not seller/partner) */}
+              {!isSellerAuthenticated && !isPartnerAuthenticated && (
+                <Link href="/wishlist" className="relative p-2 rounded-xl hover:bg-rose-50 transition-colors group">
+                  <Heart className={`w-6 h-6 transition-colors ${wishlistItems.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-600 group-hover:text-rose-500'}`} />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black flex items-center justify-center shadow-md shadow-rose-200">
+                      {wishlistItems.length > 99 ? '99+' : wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+              )}
+
               {/* Cart */}
               <Link href="/cart" className="relative p-2 rounded-xl hover:bg-violet-50 transition-colors group">
                 <ShoppingCart className="w-6 h-6 text-gray-600 group-hover:text-violet-600 transition-colors" />
@@ -72,7 +85,6 @@ const Navbar = () => {
                   <Link href="/partner/delivery" className="ml-1 px-3 py-1.5 bg-indigo-100 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-200 transition-colors">
                     Dashboard
                   </Link>
-                  {/* ✅ FIX: type="button" on all buttons */}
                   <button type="button" onClick={logoutPartner} className="px-3 py-1.5 bg-gray-100 text-gray-500 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
                     Logout
                   </button>
@@ -104,8 +116,20 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Mobile Right: Cart + Hamburger */}
-            <div className="md:hidden flex items-center gap-2">
+            {/* Mobile Right: Wishlist + Cart + Hamburger */}
+            <div className="md:hidden flex items-center gap-1">
+              {/* Wishlist icon — mobile */}
+              {!isSellerAuthenticated && !isPartnerAuthenticated && (
+                <Link href="/wishlist" className="relative p-2 rounded-xl hover:bg-rose-50 transition-colors">
+                  <Heart className={`w-6 h-6 ${wishlistItems.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-600'}`} />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black flex items-center justify-center shadow-md shadow-rose-200">
+                      {wishlistItems.length > 99 ? '99+' : wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+              )}
+
               <Link href="/cart" className="relative p-2 rounded-xl hover:bg-violet-50 transition-colors">
                 <ShoppingCart className="w-6 h-6 text-gray-600" />
                 {totalCount > 0 && (
@@ -114,7 +138,7 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
-              {/* ✅ FIX: type="button" prevents any accidental form submission */}
+
               <button
                 type="button"
                 onClick={toggleMobileMenu}
@@ -138,6 +162,23 @@ const Navbar = () => {
                 <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-700 hover:text-purple-600 font-medium py-2 px-2 rounded-lg hover:bg-purple-50 transition-all min-h-[44px] flex items-center">
                   Track Order
                 </Link>
+
+                {/* Wishlist in mobile menu */}
+                {!isSellerAuthenticated && !isPartnerAuthenticated && (
+                  <Link
+                    href="/wishlist"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-gray-700 hover:text-rose-500 font-medium py-2 px-2 rounded-lg hover:bg-rose-50 transition-all min-h-[44px]"
+                  >
+                    <Heart className={`w-5 h-5 ${wishlistItems.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-500'}`} />
+                    <span>Wishlist</span>
+                    {wishlistItems.length > 0 && (
+                      <span className="ml-auto text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-500 border border-rose-200">
+                        {wishlistItems.length}
+                      </span>
+                    )}
+                  </Link>
+                )}
 
                 <div className="pt-2 border-t border-gray-100">
                   {isPartnerAuthenticated ? (

@@ -3,6 +3,167 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+// ─── Cookie helpers ────────────────────────────────────────────────────────────
+function setCookie(name, value, days = 30) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+}
+
+function getCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith(name + '='))
+    ?.split('=')[1]
+    ? decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1])
+    : null;
+}
+
+// ─── Allowed city (case-insensitive) ──────────────────────────────────────────
+const ALLOWED_CITY = 'panipat';
+
+// ─── Location Gate ─────────────────────────────────────────────────────────────
+const LocationGate = ({ onAllowed }) => {
+  const [city, setCity] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | detecting | denied
+  const [inputVal, setInputVal] = useState('');
+
+  const checkCity = useCallback((value) => {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === ALLOWED_CITY) {
+      setCookie('user_city', value.trim(), 365);
+      onAllowed();
+    } else {
+      setStatus('denied');
+      setCity(value.trim());
+    }
+  }, [onAllowed]);
+
+  const handleDetect = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser. Please enter your city manually.');
+      return;
+    }
+    setStatus('detecting');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          const detectedCity =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.county ||
+            '';
+          setInputVal(detectedCity);
+          checkCity(detectedCity);
+        } catch {
+          setStatus('idle');
+          alert('Could not detect your location. Please enter your city manually.');
+        }
+      },
+      () => {
+        setStatus('idle');
+        alert('Location access denied. Please enter your city manually.');
+      }
+    );
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!inputVal.trim()) return;
+    checkCity(inputVal);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-purple-100 border border-purple-100 overflow-hidden">
+        {/* Top accent */}
+        <div className="h-1.5 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500" />
+
+        <div className="p-8 text-center">
+          {status !== 'denied' ? (
+            <>
+              <div className="text-5xl mb-4">📍</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-1">Where are you?</h2>
+              <p className="text-sm text-gray-400 mb-6">
+                We need your city to check if we deliver in your area.
+              </p>
+
+              {/* Auto-detect button */}
+              <button
+                onClick={handleDetect}
+                disabled={status === 'detecting'}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-60 mb-3 cursor-pointer"
+              >
+                {status === 'detecting' ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Detecting…
+                  </>
+                ) : (
+                  <>
+                    <span>🎯</span> Detect My Location
+                  </>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="flex-1 h-px bg-purple-100" />
+                <span className="text-xs text-gray-400">or enter manually</span>
+                <span className="flex-1 h-px bg-purple-100" />
+              </div>
+
+              {/* Manual input */}
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  placeholder="Enter your city…"
+                  className="flex-1 border border-purple-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+                />
+                <button
+                  type="submit"
+                  className="bg-purple-50 border border-purple-200 text-violet-600 font-semibold text-sm px-4 py-2.5 rounded-xl hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all duration-150 cursor-pointer"
+                >
+                  Go
+                </button>
+              </form>
+            </>
+          ) : (
+            /* ── Not available screen ── */
+            <>
+              <div className="text-5xl mb-4">😔</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Not Available Yet</h2>
+              <p className="text-sm text-gray-400 mb-1">
+                Sorry, we're currently not available in
+              </p>
+              <p className="text-base font-bold text-rose-500 mb-4">{city}</p>
+              <p className="text-xs text-gray-400 bg-purple-50 rounded-xl px-4 py-3 mb-6">
+                🚀 We're expanding fast! Right now we only serve{' '}
+                <span className="font-semibold text-violet-600">Panipat</span>.
+                We'll be in your city soon.
+              </p>
+              <button
+                onClick={() => { setStatus('idle'); setInputVal(''); }}
+                className="w-full border border-violet-200 text-violet-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
+              >
+                Try a Different City
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Product Card ──────────────────────────────────────────────────────────────
 const ProductCard = ({ product, onNavigate }) => (
   <div className="w-44 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
     <div className="relative h-32 bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center">
@@ -33,6 +194,7 @@ const ProductCard = ({ product, onNavigate }) => (
   </div>
 );
 
+// ─── Shop Card ─────────────────────────────────────────────────────────────────
 const ShopCard = ({ shop, rating, onNavigate }) => (
   <div className="w-52 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
     <div className="h-28 bg-gradient-to-br from-violet-50 to-fuchsia-50 flex items-center justify-center overflow-hidden">
@@ -74,7 +236,9 @@ const ShopCard = ({ shop, rating, onNavigate }) => (
   </div>
 );
 
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 const Page = () => {
+  const [locationAllowed, setLocationAllowed] = useState(null); // null = checking
   const [loading, setLoading] = useState(true);
   const [productsByCategory, setProductsByCategory] = useState({});
   const [shops, setShops] = useState([]);
@@ -85,10 +249,26 @@ const Page = () => {
     router.push(path);
   }, [router]);
 
+  // Check cookie on mount
   useEffect(() => {
-    loadData();
-    fetchRatings();
+    const saved = getCookie('user_city');
+    if (saved && saved.toLowerCase() === ALLOWED_CITY) {
+      setLocationAllowed(true);
+    } else if (saved) {
+      // Had a cookie but wrong city — show gate again
+      setLocationAllowed(false);
+    } else {
+      setLocationAllowed(false);
+    }
   }, []);
+
+  // Load data once location is confirmed
+  useEffect(() => {
+    if (locationAllowed) {
+      loadData();
+      fetchRatings();
+    }
+  }, [locationAllowed]);
 
   const loadData = async () => {
     try {
@@ -99,11 +279,9 @@ const Page = () => {
       const productsData = await productsRes.json();
       const sellersData = await sellersRes.json();
 
-      // Handle both { sellers: [] } and plain array response
       const products = productsData.products || productsData || [];
       const sellers = sellersData.sellers || (Array.isArray(sellersData) ? sellersData : []);
 
-      // Build shopId → shop map
       const shopsMap = {};
       const allShops = [];
       sellers.forEach(seller => {
@@ -113,7 +291,6 @@ const Page = () => {
         });
       });
 
-      // Group in-stock products by category
       const grouped = {};
       products.forEach(p => {
         if (p.stockStatus !== 'in_stock' || p.stockQuantity <= 0) return;
@@ -151,6 +328,20 @@ const Page = () => {
       console.error('Failed to fetch ratings:', err);
     }
   };
+
+  // ── Render ──
+  if (locationAllowed === null) {
+    // Brief flash while reading cookie
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center">
+        <span className="w-8 h-8 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!locationAllowed) {
+    return <LocationGate onAllowed={() => setLocationAllowed(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-white">
