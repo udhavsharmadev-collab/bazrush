@@ -326,7 +326,7 @@ const OrdersTab = ({ seller }) => {
                           <div className="w-7 h-7 rounded-lg overflow-hidden bg-purple-50 border border-purple-100 flex-shrink-0">
                             {shopPhoto && (
                               <img
-                                src={`/images/${shopPhoto}`}
+                                src={shopPhoto}
                                 alt=""
                                 className="w-full h-full object-cover"
                                 onError={(e) => { e.target.style.opacity = '0'; }}
@@ -342,7 +342,8 @@ const OrdersTab = ({ seller }) => {
                           {(o.shop?.items || []).slice(0, 3).map((item, j) => (
                             <div key={j} className="w-7 h-7 rounded-lg border-2 border-white bg-purple-50 overflow-hidden">
                               <img
-                                src={`/images/${item.imageId}`}
+                                
+src={item.imageId}
                                 alt=""
                                 className="w-full h-full object-contain p-0.5"
                                 onError={(e) => { e.target.style.opacity = '0'; }}
@@ -396,7 +397,8 @@ const OrdersTab = ({ seller }) => {
                                   <div key={j} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2 border border-purple-100">
                                     <div className="w-9 h-9 rounded-lg overflow-hidden bg-purple-50 border border-purple-100 flex-shrink-0">
                                       <img
-                                        src={`/images/${item.imageId}`}
+                                        
+src={item.imageId}
                                         alt=""
                                         className="w-full h-full object-contain p-0.5"
                                         onError={(e) => { e.target.style.opacity = '0'; }}

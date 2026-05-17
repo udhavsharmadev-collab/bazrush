@@ -439,7 +439,7 @@ const CheckoutPage = () => {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-6 h-6 rounded-lg overflow-hidden bg-violet-50 border border-violet-100 flex-shrink-0">
                       {shopInfo?.mainPhotoId && (
-                        <img src={`/images/${shopInfo.mainPhotoId}`} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.opacity = '0'; }} />
+                        <img src={shopInfo.mainPhotoId} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.opacity = '0'; }} />
                       )}
                     </div>
                     <p className="text-[11px] font-black text-violet-600 capitalize">
@@ -451,7 +451,7 @@ const CheckoutPage = () => {
                     {items.map(item => (
                       <div key={item.key} className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                          <img src={`/images/${item.product.cartImageId ?? item.product.mainImageId}`} alt={item.product.name} className="w-full h-full object-contain p-1" onError={e => { e.target.style.opacity = '0.2'; }} />
+                          <img src={item.product.cartImageId ?? item.product.mainImageId} alt={item.product.name} className="w-full h-full object-contain p-1" onError={e => { e.target.style.opacity = '0.2'; }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-black text-gray-900 capitalize truncate">{item.product.name}</p>

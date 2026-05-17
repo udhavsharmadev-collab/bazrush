@@ -111,7 +111,7 @@ const ReviewModal = ({ target, order, userPhone, userName, onClose, onSubmitted 
         <div className="p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0 flex items-center justify-center">
-              <img src={`/images/${isShop ? target.shopPhoto : target.productImage}`} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
+              <img src={isShop ? target.shopPhoto : target.productImage} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
             </div>
             <div className="flex-1">
               <p className={`text-[10px] font-black uppercase tracking-widest ${isShop ? 'text-violet-400' : 'text-amber-500'}`}>
@@ -156,7 +156,7 @@ const ShopGroup = ({ shopData }) => {
     <div className="border border-gray-100 rounded-2xl overflow-hidden">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-violet-50 transition-colors">
         <div className="w-8 h-8 rounded-xl overflow-hidden bg-violet-100 border border-violet-200 flex-shrink-0 flex items-center justify-center">
-          {photo ? <img src={`/images/${photo}`} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} /> : <Store className="w-4 h-4 text-violet-400" />}
+          {photo ? <img src={photo} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} /> : <Store className="w-4 h-4 text-violet-400" />}
         </div>
         <div className="flex-1 text-left">
           <p className="text-sm font-black text-gray-800 capitalize">{name}</p>
@@ -166,7 +166,8 @@ const ShopGroup = ({ shopData }) => {
           <div className="flex -space-x-1.5">
             {shopData.items.slice(0, 3).map((item, i) => (
               <div key={i} className="w-6 h-6 rounded-lg border border-white bg-violet-50 overflow-hidden">
-                <img src={`/images/${item.imageId}`} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.target.style.opacity = '0'; }} />
+                <img 
+src={item.imageId} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.target.style.opacity = '0'; }} />
               </div>
             ))}
           </div>
@@ -178,7 +179,8 @@ const ShopGroup = ({ shopData }) => {
           {shopData.items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                <img src={`/images/${item.imageId}`} alt={item.name} className="w-full h-full object-contain p-1" onError={(e) => { e.target.style.opacity = '0.15'; }} />
+                <img 
+src={item.imageId} alt={item.name} className="w-full h-full object-contain p-1" onError={(e) => { e.target.style.opacity = '0.15'; }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-black text-gray-800 capitalize truncate">{item.name}</p>
@@ -348,7 +350,7 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
             {shops.map((shop) => (
               <div key={shop.shopId} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-violet-50 border border-violet-100">
                 <div className="w-4 h-4 rounded-md overflow-hidden bg-white flex-shrink-0">
-                  {shop.shopPhoto && <img src={`/images/${shop.shopPhoto}`} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />}
+                  {shop.shopPhoto && <img src={shop.shopPhoto} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />}
                 </div>
                 <p className="text-[10px] font-black text-violet-600 capitalize">{shop.shopName}</p>
               </div>
@@ -360,7 +362,8 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
               <div className="flex -space-x-2">
                 {shops.flatMap(s => s.items || []).slice(0, 3).map((item, i) => (
                   <div key={i} className="w-9 h-9 rounded-2xl border-2 border-white bg-gradient-to-br from-violet-50 to-fuchsia-50 overflow-hidden shadow-sm">
-                    <img src={`/images/${item.imageId}`} alt="" className="w-full h-full object-contain p-1" onError={(e) => { e.target.style.opacity = '0'; }} />
+                    <img 
+src={item.imageId} alt="" className="w-full h-full object-contain p-1" onError={(e) => { e.target.style.opacity = '0'; }} />
                   </div>
                 ))}
                 {shops.flatMap(s => s.items || []).length > 3 && (
@@ -434,7 +437,7 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
                           <div className="flex items-center justify-between px-4 py-3 bg-violet-50">
                             <div className="flex items-center gap-2">
                               <div className="w-7 h-7 rounded-xl overflow-hidden bg-white border border-violet-100 flex-shrink-0">
-                                {shop.shopPhoto && <img src={`/images/${shop.shopPhoto}`} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />}
+                                {shop.shopPhoto && <img src={shop.shopPhoto} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />}
                               </div>
                               <div>
                                 <p className="text-xs font-black text-gray-800 capitalize">{shop.shopName}</p>
@@ -458,7 +461,8 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
                               <div key={item.key || item.productId} className="flex items-center justify-between px-4 py-2.5 bg-white border-t border-violet-50">
                                 <div className="flex items-center gap-2">
                                   <div className="w-7 h-7 rounded-lg overflow-hidden bg-amber-50 border border-amber-100 flex-shrink-0">
-                                    <img src={`/images/${item.imageId}`} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.target.style.opacity = '0'; }} />
+                                    <img 
+src={item.imageId} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.target.style.opacity = '0'; }} />
                                   </div>
                                   <div>
                                     <p className="text-xs font-black text-gray-700 capitalize truncate max-w-[140px]">{item.name}</p>
