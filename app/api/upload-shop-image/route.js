@@ -1,50 +1,38 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
-const imagesDir = path.join(process.cwd(), 'public/images');
-
-
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request) {
   try {
-    const formData = await request.formData();
-    
-    // Ensure images directory exists
-    await fs.mkdir(imagesDir, { recursive: true });
-
+    const formData  = await request.formData();
     const imageFile = formData.get('image');
+
     if (!imageFile) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Generate short ID from file buffer (first 2 chars of MD5 hash)
-    const generateShortId = async (file) => {
-      const bytes = await file.arrayBuffer();
-      const hash = crypto.createHash('md5').update(Buffer.from(bytes)).digest('hex');
-      const ext = path.extname(file.name).toLowerCase() || '.jpg';
-      return `${hash.slice(0, 2)}${ext}`;
-    };
+    const bytes  = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const mainPhotoId = await generateShortId(imageFile);
-    
-    // Save image
-    const buffer = Buffer.from(await imageFile.arrayBuffer());
-    const filePath = path.join(imagesDir, mainPhotoId);
-    await fs.writeFile(filePath, buffer);
-
-    return new Response(mainPhotoId, {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' }
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: 'shops' },
+        (error, result) => error ? reject(error) : resolve(result)
+      ).end(buffer);
     });
+
+    return new Response(result.secure_url, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Upload failed', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Upload failed', details: error.message }, { status: 500 });
   }
 }
-
-

@@ -247,7 +247,7 @@ if (found) {
         <div className="w-full h-64 rounded-3xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 flex items-center justify-center relative">
           <img
             key={bigImageId}
-            src={`/images/${bigImageId}`}
+            src={bigImageId}
             alt={product.name}
             className="w-full h-full object-contain p-4"
             onError={(e) => { e.target.style.opacity = '0.2'; }}
@@ -284,7 +284,7 @@ if (found) {
           }`}
         >
           <img
-            src={`/images/${imgId}`}
+            src={imgId}
             alt={i === 0 ? 'Main' : `Side ${i}`}
             className="w-full h-full object-cover"
             onError={(e) => { e.target.style.opacity = '0'; }}
@@ -348,7 +348,7 @@ if (found) {
                   >
                     {colorImgId ? (
                       <img
-                        src={`/images/${colorImgId}`}
+                        src={colorImgId}
                         alt={color}
                         className="w-full h-full object-cover"
                         onError={(e) => { e.target.style.display = 'none'; }}
@@ -403,7 +403,7 @@ if (found) {
             className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-violet-200 hover:bg-violet-50/50 transition-all duration-200 cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-2xl overflow-hidden bg-violet-100 flex-shrink-0 border border-violet-100">
-              <img src={`/images/${shop.mainPhotoId}`} alt={shop.shopName} className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
+              <img src={shop.mainPhotoId} alt={shop.shopName} className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-gray-400 font-medium">Sold by</p>
@@ -522,7 +522,7 @@ if (found) {
                   {/* Show the active image (color or main) as a mini preview */}
                   {cartImageId && (
                     <img
-                      src={`/images/${cartImageId}`}
+                      src={cartImageId}
                       alt="variant"
                       className="w-8 h-8 rounded-lg object-cover mx-auto mb-0.5 border border-violet-200"
                       onError={(e) => { e.target.style.display = 'none'; }}

@@ -209,7 +209,7 @@ const ShopsPage = () => {
                   {/* Image */}
                   <div className="relative h-32 bg-gradient-to-br from-violet-50 to-fuchsia-50 overflow-hidden">
                     <img
-                      src={`/images/${shop.mainPhotoId}`}
+                      src={shop.mainPhotoId}
                       alt={shop.shopName}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => { e.target.style.opacity = "0.1"; }}

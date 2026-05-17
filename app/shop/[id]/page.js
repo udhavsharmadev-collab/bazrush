@@ -136,7 +136,7 @@ const ShopPage = () => {
       {/* Hero */}
       <div className="relative h-52 overflow-hidden">
         <img
-          src={`/images/${shop.mainPhotoId}`}
+          src={shop.mainPhotoId}
           alt={shop.shopName}
           className="w-full h-full object-cover"
           onError={(e) => { e.target.style.opacity = '0.1'; }}
@@ -149,7 +149,7 @@ const ShopPage = () => {
         <div className="flex items-end gap-3 mb-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white shadow-lg bg-violet-50 flex-shrink-0">
             <img
-              src={`/images/${shop.mainPhotoId}`}
+              src={shop.mainPhotoId}
               alt={shop.shopName}
               className="w-full h-full object-cover"
               onError={(e) => { e.target.style.opacity = '0'; }}

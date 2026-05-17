@@ -199,7 +199,7 @@ const ShopCard = ({ shop, rating, onNavigate }) => (
   <div className="w-52 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
     <div className="h-28 bg-gradient-to-br from-violet-50 to-fuchsia-50 flex items-center justify-center overflow-hidden">
       <img
-        src={`/images/${shop.mainPhotoId}`}
+        src={shop.mainPhotoId}
         alt={shop.shopName}
         className="w-full h-full object-cover"
         onError={(e) => { e.target.style.display = 'none'; }}

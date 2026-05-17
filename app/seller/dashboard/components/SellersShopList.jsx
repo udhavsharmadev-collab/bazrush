@@ -155,7 +155,7 @@ const SellersShopList = ({ seller, onSelectShop, onEditShop }) => {
                 <div className="w-full h-40 rounded-lg overflow-hidden bg-purple-200 group-hover:bg-purple-300 transition">
                   {shop.mainPhotoId && !shop.mainPhotoId.startsWith('{') ? (
                     <img
-                      src={`/images/${shop.mainPhotoId}`}
+                      src={shop.mainPhotoId}
                       alt={shop.shopName}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
