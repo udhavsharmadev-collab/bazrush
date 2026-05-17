@@ -108,7 +108,7 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
   const activePartners = Object.values(partners).filter(p => p.isOnline).length;
 
   // Revenue: sum shop subtotals across all orders
-  const totalRevenue    = allOrders.reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.subtotal || 0), 0), 0);
+  const totalRevenue    = allOrders.reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.subtotal || 0), 0) + (o.deliveryFee || 0), 0);
 
   // ✅ Total delivery fees ever collected — never resets
   const totalDeliveryFees = allOrders.reduce((s, o) => s + (o.deliveryFee || 0), 0);
