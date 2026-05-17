@@ -105,11 +105,14 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
   const partnerCount = Object.keys(partners).length;
   const totalShops   = sellers.reduce((s, sel) => s + (sel.shops?.length || 0), 0);
 
-  // ✅ fixed: use isOnline (not isAvailable)
   const activePartners = Object.values(partners).filter(p => p.isOnline).length;
 
   // Revenue: sum shop subtotals across all orders
   const totalRevenue    = allOrders.reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.subtotal || 0), 0), 0);
+
+  // ✅ Total delivery fees ever collected — never resets
+  const totalDeliveryFees = allOrders.reduce((s, o) => s + (o.deliveryFee || 0), 0);
+
   const totalOrders     = allOrders.length;
   const deliveredOrders = allOrders.filter(o => o.status === "delivered").length;
   const pendingOrders   = totalOrders - deliveredOrders;
@@ -169,7 +172,8 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
               {deliveredOrders} delivered · {pendingOrders} pending
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          {/* ✅ 3 cards: Delivered, Pending, Delivery Fees */}
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-2xl font-black text-white">{fmt(deliveredOrders)}</p>
               <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Delivered</p>
@@ -177,6 +181,10 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
             <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-2xl font-black text-white">{fmt(pendingOrders)}</p>
               <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Pending</p>
+            </div>
+            <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
+              <p className="text-2xl font-black text-amber-300">{fmtRupee(totalDeliveryFees)}</p>
+              <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Delivery Fees</p>
             </div>
           </div>
         </div>

@@ -584,14 +584,13 @@ const OrdersPage = () => {
 
   const handleReviewSubmitted = (key) => setReviewedKeys(prev => ({ ...prev, [key]: true }));
 
-  if (!isAuthenticated) return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-      <div className="text-6xl mb-4">🔐</div>
-      <h2 className="text-xl font-black text-gray-900 mb-2">Login to see your orders</h2>
-      <p className="text-gray-400 text-sm mb-8">Your order history is saved to your account</p>
-      <button onClick={() => router.push('/login')} className="bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-violet-200">Login ⚡</button>
-    </div>
-  );
+ if (!isAuthenticated) return (
+  <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+    <div className="text-6xl mb-4">🔐</div>
+    <h2 className="text-xl font-black text-gray-900 mb-2">Login to see your orders</h2>
+    <p className="text-gray-400 text-sm mb-8">Your order history is saved to your account</p>
+  </div>
+);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
