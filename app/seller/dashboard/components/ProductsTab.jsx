@@ -223,7 +223,7 @@ const ProductsTab = ({ seller }) => {
                 {/* Image */}
                 <div className="relative h-36 sm:h-44 bg-gradient-to-br from-purple-50 to-indigo-50 overflow-hidden">
                   <img
-                    src={`/images/${product.mainImageId}`}
+                    src={product.mainImageId}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { e.target.style.opacity = '0.1'; }}

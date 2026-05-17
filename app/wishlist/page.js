@@ -54,7 +54,7 @@ const WishlistPage = () => {
               {/* Product image */}
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 flex-shrink-0 flex items-center justify-center">
                 <img
-                  src={`/images/${product.mainImageId}`}
+                  src={product.mainImageId}
                   alt={product.name}
                   className="w-full h-full object-contain p-1"
                   onError={(e) => { e.target.style.opacity = '0.2'; }}

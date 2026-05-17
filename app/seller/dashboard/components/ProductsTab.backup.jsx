@@ -185,7 +185,7 @@ const ProductsTab = ({ seller }) => {
                     {product.sizes?.length > 0 ? 'In Stock' : 'Out of Stock'}
                   </div>
                   <img 
-                    src={`/images/${product.mainImageId}`} 
+                    src={product.mainImageId} 
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700"
                     onError={(e) => {

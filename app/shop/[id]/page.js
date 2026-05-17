@@ -301,7 +301,7 @@ const ShopPage = () => {
                       >
                         <div className="w-full aspect-square md:w-[200px] md:h-[200px] rounded-xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 relative mb-1">
                           <img
-                            src={`/images/${product.mainImageId}`}
+                            src={product.mainImageId}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => { e.target.style.opacity = '0.2'; }}
@@ -338,7 +338,7 @@ const ShopPage = () => {
                         <div key={product.id} className="w-[calc(33.333%-8px)] opacity-50 cursor-not-allowed">
                           <div className="w-full aspect-square md:w-[200px] md:h-[200px] rounded-xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 relative mb-1">
                             <img
-                              src={`/images/${product.mainImageId}`}
+                              src={product.mainImageId}
                               alt={product.name}
                               className="w-full h-full object-cover grayscale"
                               onError={(e) => { e.target.style.opacity = '0.2'; }}

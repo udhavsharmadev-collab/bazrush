@@ -168,7 +168,7 @@ const ProductCard = ({ product, onNavigate }) => (
   <div className="w-44 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
     <div className="relative h-32 bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center">
       <img
-        src={`/images/${product.mainImageId}`}
+        src={product.mainImageId}
         alt={product.name}
         className="w-full h-full object-cover"
         onError={(e) => { e.target.style.display = 'none'; }}
