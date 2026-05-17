@@ -53,7 +53,8 @@ const SellersShopList = ({ seller, onSelectShop, onEditShop }) => {
               <div className="text-center">
                 <div className={`inline-block p-2 rounded-2xl mb-4 ${viewingShop.isOpen ? 'bg-green-100 border-4 border-green-200' : 'bg-red-100 border-4 border-red-200'}`}>
                   <img 
-                    src={viewingShop.mainPhotoId ? `/images/${viewingShop.mainPhotoId}` : '/default-shop.jpg'}
+                    src={viewingShop.mainPhotoId || '/default-shop.jpg'}
+
                     alt={viewingShop.shopName}
                     className="w-48 h-48 rounded-2xl object-cover shadow-xl"
                   />
@@ -88,7 +89,7 @@ const SellersShopList = ({ seller, onSelectShop, onEditShop }) => {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {viewingShop.photoIds.slice(0, 4).map((id, index) => (
                       id ? (
-                        <img key={index} src={`/images/${id}`} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover rounded-xl shadow-lg hover:scale-105 transition transform" />
+                        <img key={index} src={id} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover rounded-xl shadow-lg hover:scale-105 transition transform" />
                       ) : (
                         <div key={index} className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
                           <span className="text-gray-400">No photo</span>
