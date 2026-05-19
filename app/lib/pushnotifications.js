@@ -16,10 +16,17 @@ export async function initPushNotifications(userPhone) {
   PushNotifications.addListener('registration', async (token) => {
     console.log('FCM Token:', token.value);
     if (userPhone) {
+      // Save to users (for customers)
       await fetch(`/api/users/${encodeURIComponent(userPhone)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fcmToken: token.value }),
+      });
+      // Save to delivery partners too
+      await fetch(`/api/delivery-partners`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: userPhone, fcmToken: token.value }),
       });
     }
   });
