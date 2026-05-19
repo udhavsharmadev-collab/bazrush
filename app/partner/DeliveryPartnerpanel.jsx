@@ -178,7 +178,7 @@ if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false);
 
 // Save FCM token
 try {
-  const { initPushNotifications } = await import('@/lib/pushNotifications');
+  const { initPushNotifications } = await import('../lib/pushnotifications');
   await initPushNotifications(fullPhone);
 } catch(e) {
   console.log('Push init failed:', e);
@@ -218,7 +218,7 @@ if (!loginRes.ok) { setError(loginData.error || "Incorrect password"); setLoadin
 
 // Save FCM token
 try {
-  const { initPushNotifications } = await import('@/lib/pushNotifications');
+  const { initPushNotifications } = await import('../lib/pushnotifications');
   await initPushNotifications(fullPhone);
 } catch(e) {
   console.log('Push init failed:', e);

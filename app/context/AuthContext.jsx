@@ -67,7 +67,7 @@ setUser(userData);
 setIsAuthenticated(true);
 
 // Initialize push notifications
-const { initPushNotifications } = await import('@/lib/pushNotifications');
+const { initPushNotifications } = await import('../lib/pushnotifications');
 await initPushNotifications(phoneKey);
   };
   const logout = () => {
