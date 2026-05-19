@@ -68,7 +68,8 @@ const UserSchema = new mongoose.Schema({
   cart:      { type: Array,              default: [] },
   orders:    { type: [OrderSchema],      default: [] },
   reviews:   { type: Array,              default: [] },
-  wishlist:  { type: [WishlistItemSchema], default: [] }, // ← new
+  wishlist:  { type: [WishlistItemSchema], default: [] },
+  fcmToken:  { type: String, default: '' }, // ← new
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

@@ -21,6 +21,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
 
   lat: Number,
   lng: Number,
+  fcmToken: { type: String, default: '' },
 }, { timestamps: true });
 
 export default mongoose.models.DeliveryPartner

@@ -1,0 +1,9 @@
+{
+  "appId": "com.bazrush.app",
+  "appName": "Bazrush",
+  "webDir": "out",
+  "server": {
+    "url": "https://bazrush.vercel.app/",
+    "cleartext": true
+  }
+}

@@ -12,13 +12,11 @@ export async function GET(request) {
     const shopId = searchParams.get('shopId');
     const all    = searchParams.get('all');
 
-    // ── Customer: their own orders ─────────────────────────────────────────
     if (phone) {
       const user = await User.findOne({ phoneNumber: phone }).lean();
       return Response.json(user?.orders || []);
     }
 
-    // ── Delivery partner: ALL orders across every user ─────────────────────
     if (all === 'true') {
       const users = await User.find(
         { 'orders.0': { $exists: true } },
@@ -44,7 +42,6 @@ export async function GET(request) {
       return Response.json(results);
     }
 
-    // ── Seller: orders for their shops ─────────────────────────────────────
     if (shopId) {
       const shopIds = shopId.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -125,6 +122,29 @@ export async function POST(request) {
     user.orders.unshift(order);
     await user.save();
 
+    // Notify online delivery partners
+    try {
+      const DeliveryPartner = (await import('../../models/DeliveryPartner.js')).default;
+      const partners = await DeliveryPartner.find({
+        isOnline: true,
+        fcmToken: { $exists: true, $ne: '' }
+      }).lean();
+
+      for (const partner of partners) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/send-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fcmToken: partner.fcmToken,
+            title: '🚀 New Order Available!',
+            body: 'New delivery order is waiting. Open app to accept!',
+          }),
+        });
+      }
+    } catch(e) {
+      console.log('Partner notification failed:', e);
+    }
+
     return Response.json({ success: true, order });
   } catch (error) {
     console.error('❌ POST order failed:', error.message);
@@ -132,7 +152,6 @@ export async function POST(request) {
   }
 }
 
-// ── Seller (status) + Delivery partner (assign/otp/deliver) ──────────────────
 export async function PATCH(request) {
   try {
     await connectDB();
@@ -153,13 +172,11 @@ export async function PATCH(request) {
     const order = user.orders.find(o => o.id === orderId);
     if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
 
-    // ── Capture pre-patch state for COD logic ────────────────────────────────
     const wasDelivered = order.status === 'delivered';
 
     Object.assign(order, patch);
     await user.save();
 
-    // ── If just marked delivered + COD → increment partner's codCollected ────
     const isCod = (m) => !!m && ['cod', 'cash'].some(k => m.toLowerCase().includes(k));
 
     if (

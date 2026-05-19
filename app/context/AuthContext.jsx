@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const AuthContext = createContext();
 
@@ -60,12 +61,15 @@ export const AuthProvider = ({ children }) => {
       console.error('Login fetch failed:', e);
     }
 
-    const userData = { phone: phoneKey, verified: true, profile };
-    localStorage.setItem('bazrushUser', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
-  };
+  const userData = { phone: phoneKey, verified: true, profile };
+localStorage.setItem('bazrushUser', JSON.stringify(userData));
+setUser(userData);
+setIsAuthenticated(true);
 
+// Initialize push notifications
+const { initPushNotifications } = await import('@/lib/pushNotifications');
+await initPushNotifications(phoneKey);
+  };
   const logout = () => {
     localStorage.removeItem('bazrushUser');
     localStorage.removeItem('bazrushAddresses');

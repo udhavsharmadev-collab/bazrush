@@ -173,10 +173,19 @@ export default function DeliveryPartnerPanel() {
             password,
           }),
         });
-        const data = await res.json();
-        if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
-        loginPartner(data.partner);
-      } else {
+       const data = await res.json();
+if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
+
+// Save FCM token
+try {
+  const { initPushNotifications } = await import('@/lib/pushNotifications');
+  await initPushNotifications(fullPhone);
+} catch(e) {
+  console.log('Push init failed:', e);
+}
+
+loginPartner(data.partner);
+} else {
         // LOGIN - phone sent in POST body to completely avoid +91 URL encoding issues
         const res = await fetch("/api/delivery-partners", {
           method: "POST",
@@ -205,8 +214,17 @@ export default function DeliveryPartnerPanel() {
           body: JSON.stringify({ action: "login", phoneNumber: fullPhone, password }),
         });
         const loginData = await loginRes.json();
-        if (!loginRes.ok) { setError(loginData.error || "Incorrect password"); setLoading(false); return; }
-        loginPartner(loginData.partner);
+if (!loginRes.ok) { setError(loginData.error || "Incorrect password"); setLoading(false); return; }
+
+// Save FCM token
+try {
+  const { initPushNotifications } = await import('@/lib/pushNotifications');
+  await initPushNotifications(fullPhone);
+} catch(e) {
+  console.log('Push init failed:', e);
+}
+
+loginPartner(loginData.partner);
       }
     } catch {
       setError("Something went wrong. Try again.");

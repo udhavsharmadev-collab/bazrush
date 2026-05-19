@@ -26,6 +26,7 @@ const SellerSchema = new mongoose.Schema({
   name: String, age: String, gstin: String,
   password: String, confirmPassword: String, email: String,
   shops: { type: [ShopSchema], default: [] },
+  fcmToken: { type: String, default: '' }, // ← add this
 }, { timestamps: true });
 
 export default mongoose.models.Seller || mongoose.model('Seller', SellerSchema);

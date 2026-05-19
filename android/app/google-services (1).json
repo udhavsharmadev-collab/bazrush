@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "941664723098",
+    "project_id": "bazrush-52795",
+    "storage_bucket": "bazrush-52795.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941664723098:android:28cbabdc45f3291876ff23",
+        "android_client_info": {
+          "package_name": "com.bazrush.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAV4AyUd0ow9KcQKo71YkcbRZ3dMcgWelI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
