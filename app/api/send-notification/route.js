@@ -1,5 +1,5 @@
-import { connectDB } from '../../../lib/mongodb.js';
-import User from '../../../models/User.js';
+import { connectDB } from '../../lib/mongodb.js';
+import User from '../../models/User.js';
 import admin from 'firebase-admin';
 
 // Initialize Firebase Admin
