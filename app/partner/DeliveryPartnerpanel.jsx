@@ -177,12 +177,12 @@ export default function DeliveryPartnerPanel() {
 if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
 
 // Save FCM token
-try {
-  const { initPushNotifications } = await import('../lib/pushnotifications');
-  await initPushNotifications(fullPhone);
-} catch(e) {
-  console.log('Push init failed:', e);
-}
+// try {
+//   const { initPushNotifications } = await import('../lib/pushNotifications');
+//   await initPushNotifications(fullPhone);
+// } catch(e) {
+//   console.log('Push init failed:', e);
+// }
 
 loginPartner(data.partner);
 } else {
