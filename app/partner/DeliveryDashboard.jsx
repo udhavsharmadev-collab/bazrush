@@ -277,7 +277,22 @@ export default function DeliveryDashboard() {
     } catch {}
   };
 
+// Init push notifications after dashboard loads
+  useEffect(() => {
+    if (!partner?.phoneNumber) return;
+    const timer = setTimeout(async () => {
+      try {
+        const { initPushNotifications } = await import('../lib/pushNotification');
+        await initPushNotifications(partner.phoneNumber);
+      } catch(e) {
+        console.log('Push failed:', e);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [partner?.phoneNumber]);
+
   if (!partner) return null;
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
