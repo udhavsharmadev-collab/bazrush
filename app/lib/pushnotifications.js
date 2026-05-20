@@ -27,3 +27,4 @@ export async function initPushNotifications(userPhone) {
     console.log('Push failed:', e);
   }
 }
+// it will work im sure
