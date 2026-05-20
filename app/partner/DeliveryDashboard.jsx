@@ -282,7 +282,7 @@ export default function DeliveryDashboard() {
     if (!partner?.phoneNumber) return;
     const timer = setTimeout(async () => {
       try {
-        const { initPushNotifications } = await import('../lib/pushNotification');
+        const { initPushNotifications } = await import('../lib/pushnotifications');
         await initPushNotifications(partner.phoneNumber);
       } catch(e) {
         console.log('Push failed:', e);
