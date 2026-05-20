@@ -3,40 +3,27 @@ export async function initPushNotifications(userPhone) {
     const { Capacitor } = await import('@capacitor/core');
     if (!Capacitor.isNativePlatform()) return;
 
-    const { PushNotifications } = await import('@capacitor/push-notifications');
+    const { initializeApp } = await import('firebase/app');
+    const { getMessaging, getToken } = await import('firebase/messaging');
 
-    PushNotifications.addListener('registration', async (token) => {
-      if (!userPhone || !token?.value) return;
-      try {
-        await fetch(`/api/delivery-partners`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: userPhone, fcmToken: token.value }),
-        });
-      } catch(e) {}
+    const app = initializeApp({
+      apiKey: "AIzaSyB-ACI2LRV2TUZSpNkzrS0i41-d4v-XT3Y",
+      projectId: "bazrush-52795",
+      messagingSenderId: "941664723098",
+      appId: "1:941664723098:android:f746c5530f2f6476d3e950"
     });
 
-    PushNotifications.addListener('registrationError', (err) => {
-      console.log('reg error', JSON.stringify(err));
-    });
-
-    PushNotifications.addListener('pushNotificationReceived', (n) => {
-      console.log('notification', n.title);
-    });
-
-    const permission = await PushNotifications.requestPermissions();
-    if (permission.receive !== 'granted') return;
-
-    await new Promise(r => setTimeout(r, 1000));
-
-    try {
-      await PushNotifications.register();
-    } catch(e) {
-      console.log('register failed:', e);
-      // Don't crash — just log
+    const messaging = getMessaging(app);
+    const token = await getToken(messaging);
+    
+    if (token && userPhone) {
+      await fetch(`/api/delivery-partners`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: userPhone, fcmToken: token }),
+      });
     }
-
   } catch(e) {
-    console.log('push init failed:', e);
+    console.log('Push failed:', e);
   }
 }
