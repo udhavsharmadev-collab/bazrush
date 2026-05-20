@@ -216,13 +216,7 @@ loginPartner(data.partner);
         const loginData = await loginRes.json();
 if (!loginRes.ok) { setError(loginData.error || "Incorrect password"); setLoading(false); return; }
 
-// Save FCM token
-try {
-  const { initPushNotifications } = await import('../lib/pushnotifications');
-  await initPushNotifications(fullPhone);
-} catch(e) {
-  console.log('Push init failed:', e);
-}
+
 
 loginPartner(loginData.partner);
       }
