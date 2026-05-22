@@ -8,6 +8,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
   isOnline:          { type: Boolean, default: false },
   totalDeliveries:   { type: Number, default: 0 },
   totalEarnings:     { type: Number, default: 0 },
+  rejectedOrders: { type: [String], default: [] },
 
   // ── COD flow ───────────────────────────────────────────────────────────────
   settlementPending:       { type: Boolean, default: false },
@@ -23,6 +24,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
   lng: Number,
   fcmToken: { type: String, default: '' },
 }, { timestamps: true });
+
 
 export default mongoose.models.DeliveryPartner
   || mongoose.model('DeliveryPartner', DeliveryPartnerSchema);

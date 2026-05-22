@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+"your-service-account-filename.json.json" 
+"*.json.json" 

@@ -18,14 +18,9 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
     setOrders(updated);
   };
 
-  // FIX 1 — Key by partner phone so different partners don't share rejected set
-  const REJECTED_KEY = `rejected_orders_${partner.phoneNumber}`;
-
+  // ✅ Initialize rejected from MongoDB partner data instead of sessionStorage
   const [rejected, setRejected] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem(`rejected_orders_${partner.phoneNumber}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    } catch { return new Set(); }
+    return new Set(partner.rejectedOrders || []);
   });
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3500); };
@@ -52,7 +47,7 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
     });
   }, []);
 
-  // ── 5s polling — smart merge with FIX 2: don't revert optimistic accepts ──
+  // ── 5s polling ─────────────────────────────────────────────────────────────
   useEffect(() => {
     pollRef.current = setInterval(async () => {
       const remote = await fetchOrders();
@@ -65,19 +60,15 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
       const merged = remote.map(fo => {
         const existing = prevMap.get(fo.id);
         if (!existing) {
-          // Brand new order not seen before
           changed = true;
           return fo;
         }
 
-        // FIX 2 — If we locally assigned this order but server hasn't saved yet,
-        // keep our optimistic local state instead of reverting to "available"
         const weJustAssigned =
           existing.assignedPartner === partner.phoneNumber &&
           fo.assignedPartner !== partner.phoneNumber;
         if (weJustAssigned) return existing;
 
-        // Swap in fresh data if any meaningful field changed
         if (
           existing.status              !== fo.status              ||
           existing.assignedPartner     !== fo.assignedPartner     ||
@@ -89,10 +80,9 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
           changed = true;
           return fo;
         }
-        return existing; // same reference = no re-render for this card
+        return existing;
       });
 
-      // Edge case: an order was removed remotely
       if (!changed && merged.length !== current.length) changed = true;
 
       const availCount = remote.filter(o =>
@@ -120,7 +110,7 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
       body:    JSON.stringify({ customerPhone, orderId, ...patch }),
     });
 
-  // ── Handlers — update local state immediately, PATCH in background ─────────
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleAccept = async (order) => {
     const updated = ordersRef.current.map(o =>
       o.id === order.id
@@ -137,14 +127,24 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
     });
   };
 
-  // FIX 1 — Use partner-keyed storage key
-  const handleReject = (order) => {
-    setRejected(prev => {
-      const updated = new Set([...prev, order.id]);
-      try { sessionStorage.setItem(REJECTED_KEY, JSON.stringify([...updated])); } catch {}
-      return updated;
-    });
+  // ✅ Save rejection to MongoDB so it persists across devices
+  const handleReject = async (order) => {
+    const updatedRejected = new Set([...rejected, order.id]);
+    setRejected(updatedRejected);
     showToast("❌ Order rejected");
+
+    try {
+      await fetch("/api/delivery-partners", {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          phoneNumber:    partner.phoneNumber,
+          rejectedOrders: [...updatedRejected],
+        }),
+      });
+    } catch (e) {
+      console.log("Failed to save rejection:", e);
+    }
   };
 
   const handleOutForDelivery = async (order, otp) => {
