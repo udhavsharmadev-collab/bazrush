@@ -19,9 +19,14 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
   };
 
   // ✅ Initialize rejected from MongoDB partner data instead of sessionStorage
-  const [rejected, setRejected] = useState(() => {
-    return new Set(partner.rejectedOrders || []);
-  });
+ const [rejected, setRejected] = useState(() => {
+  return new Set(partner.rejectedOrders || []);
+});
+
+// ✅ Add this — sync rejected when partner prop updates
+useEffect(() => {
+  setRejected(new Set(partner.rejectedOrders || []));
+}, [partner.rejectedOrders?.length]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3500); };
 
