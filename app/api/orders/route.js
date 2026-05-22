@@ -3,6 +3,14 @@ export const dynamic = 'force-dynamic';
 import { connectDB } from '../../lib/mongodb.js';
 import User from '../../models/User.js';
 import Product from '../../models/Product.js';
+import admin from 'firebase-admin';
+
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 export async function GET(request) {
   try {
@@ -131,16 +139,14 @@ export async function POST(request) {
       }).lean();
 
       for (const partner of partners) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/send-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fcmToken: partner.fcmToken,
-            title: '🚀 New Order Available!',
-            body: 'New delivery order is waiting. Open app to accept!',
-          }),
-        });
-      }
+  await admin.messaging().send({
+    notification: {
+      title: '🚀 New Order Available!',
+      body: 'New delivery order is waiting. Open app to accept!',
+    },
+    token: partner.fcmToken,
+  });
+}
     } catch(e) {
       console.log('Partner notification failed:', e);
     }
