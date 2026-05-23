@@ -45,70 +45,41 @@ const handleDetect = async () => {
     const { Capacitor } = await import('@capacitor/core');
     if (Capacitor.isNativePlatform()) {
       const { Geolocation } = await import('@capacitor/geolocation');
-      
-      // ✅ Request permission separately so errors don't swallow it
-      let permission;
-      try {
-        permission = await Geolocation.requestPermissions();
-      } catch (e) {
-        console.log('Permission request failed:', e.message);
-        setStatus('idle');
-        alert('Could not request location permission. Please enter your city manually.');
-        return;
-      }
-
+      const permission = await Geolocation.requestPermissions();
       if (permission.location !== 'granted') {
         setStatus('idle');
         alert('Location access denied. Please enter your city manually.');
         return;
       }
-
-      // ✅ Get position separately
-      let pos;
-      try {
-        pos = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: false,
-          timeout: 8000,
-        });
-      } catch (e) {
-        console.log('Get position failed:', e.message);
-        setStatus('idle');
-        alert('Could not get your location. Please enter your city manually.');
-        return;
-      }
-
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false,
+        timeout: 8000,
+      });
       const { latitude, longitude } = pos.coords;
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        );
-        const data = await res.json();
-        const detectedCity =
-          data.address?.city ||
-          data.address?.town ||
-          data.address?.village ||
-          data.address?.county ||
-          '';
-        setInputVal(detectedCity);
-        checkCity(detectedCity);
-      } catch (e) {
-        setStatus('idle');
-        alert('Could not detect city. Please enter manually.');
-      }
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+      );
+      const data = await res.json();
+      const detectedCity =
+        data.address?.city ||
+        data.address?.town ||
+        data.address?.village ||
+        data.address?.county ||
+        '';
+      setInputVal(detectedCity);
+      checkCity(detectedCity);
       return;
     }
   } catch (e) {
-    console.log('Capacitor import failed:', e.message);
+    console.log('error:', e.message);
   }
 
-  // ✅ Web fallback
+  // Web fallback
   if (!navigator.geolocation) {
-    alert('Geolocation not supported. Please enter your city manually.');
     setStatus('idle');
+    alert('Please enter your city manually.');
     return;
   }
-
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
       try {
@@ -127,12 +98,12 @@ const handleDetect = async () => {
         checkCity(detectedCity);
       } catch {
         setStatus('idle');
-        alert('Could not detect your location. Please enter your city manually.');
+        alert('Could not detect your location. Please enter manually.');
       }
     },
     () => {
       setStatus('idle');
-      alert('Location access denied. Please enter your city manually.');
+      alert('Location access denied. Please enter manually.');
     }
   );
 };
