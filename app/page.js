@@ -38,7 +38,7 @@ const LocationGate = ({ onAllowed }) => {
     }
   }, [onAllowed]);
 
-const handleDetect = async () => {
+   const handleDetect = async () => {
   setStatus('detecting');
 
   try {
@@ -59,28 +59,23 @@ const handleDetect = async () => {
 
       const { latitude, longitude } = pos.coords;
 
-      let detectedCity = '';
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        );
-        const data = await res.json();
-        detectedCity =
-          data.address?.city ||
-          data.address?.town ||
-          data.address?.village ||
-          data.address?.county ||
-          '';
-      } catch (fetchErr) {
-        console.log('Nominatim fetch failed:', fetchErr.message);
-        setStatus('idle');
-        alert('Could not detect your city. Please enter manually.');
-        return;
-      }
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        { headers: { 'Accept-Language': 'en' } }   // ← force English results
+      );
+      const data = await res.json();
+
+      const detectedCity =
+        data.address?.city ||
+        data.address?.town ||
+        data.address?.village ||
+        data.address?.county ||
+        '';
 
       if (!detectedCity) {
+        // ← was silently spinning before
         setStatus('idle');
-        alert('Could not determine your city. Please enter manually.');
+        alert('Could not detect your city. Please enter it manually.');
         return;
       }
 
@@ -89,12 +84,13 @@ const handleDetect = async () => {
       return;
     }
   } catch (e) {
-    console.log('Capacitor error:', e.message);
-    setStatus('idle');
-    alert('Location detection failed. Please enter your city manually.');
+    console.log('Capacitor location error:', e.message);
+    setStatus('idle');   // ← was missing, caused infinite spin
+    alert('Location error: ' + e.message + '. Please enter manually.');
     return;
-  };
+  }
 
+ 
 
   // Web fallback
   if (!navigator.geolocation) {
