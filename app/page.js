@@ -51,28 +51,50 @@ const handleDetect = async () => {
         alert('Location access denied. Please enter your city manually.');
         return;
       }
+
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
         timeout: 8000,
       });
+
       const { latitude, longitude } = pos.coords;
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-      );
-      const data = await res.json();
-      const detectedCity =
-        data.address?.city ||
-        data.address?.town ||
-        data.address?.village ||
-        data.address?.county ||
-        '';
+
+      let detectedCity = '';
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        );
+        const data = await res.json();
+        detectedCity =
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.address?.county ||
+          '';
+      } catch (fetchErr) {
+        console.log('Nominatim fetch failed:', fetchErr.message);
+        setStatus('idle');
+        alert('Could not detect your city. Please enter manually.');
+        return;
+      }
+
+      if (!detectedCity) {
+        setStatus('idle');
+        alert('Could not determine your city. Please enter manually.');
+        return;
+      }
+
       setInputVal(detectedCity);
       checkCity(detectedCity);
       return;
     }
   } catch (e) {
-    console.log('error:', e.message);
-  }
+    console.log('Capacitor error:', e.message);
+    setStatus('idle');
+    alert('Location detection failed. Please enter your city manually.');
+    return;
+  };
+
 
   // Web fallback
   if (!navigator.geolocation) {
