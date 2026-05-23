@@ -102,7 +102,7 @@ const LocationGate = ({ onAllowed }) => {
     alert('Location error: ' + e.message + '. Please enter manually.');
     return;
   }
-};
+
 
   // Web fallback
   if (!navigator.geolocation) {
@@ -226,6 +226,7 @@ const LocationGate = ({ onAllowed }) => {
       </div>
     </div>
   );
+};
 
 
 // ─── Product Card ──────────────────────────────────────────────────────────────
