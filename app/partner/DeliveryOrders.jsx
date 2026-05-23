@@ -18,15 +18,15 @@ export default function DeliveryOrders({ partner, onPartnerUpdate }) {
     setOrders(updated);
   };
 
-  // ✅ Initialize rejected from MongoDB partner data instead of sessionStorage
- const [rejected, setRejected] = useState(() => {
-  return new Set(partner.rejectedOrders || []);
-});
+  // ✅ Local rejected set (for instant hide on current device)
+  const [rejected, setRejected] = useState(() => {
+    return new Set(partner.rejectedOrders || []);
+  });
 
-// ✅ Add this — sync rejected when partner prop updates
-useEffect(() => {
-  setRejected(new Set(partner.rejectedOrders || []));
-}, [partner.rejectedOrders?.length]);
+  // ✅ Sync rejected when partner prop updates
+  useEffect(() => {
+    setRejected(new Set(partner.rejectedOrders || []));
+  }, [partner.rejectedOrders?.length]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3500); };
 
@@ -44,7 +44,9 @@ useEffect(() => {
         syncOrders(all);
         setLastCount(
           all.filter(o =>
-            !o.assignedPartner && (o.status === "confirmed" || o.status === "preparing")
+            !o.assignedPartner &&
+            !(o.rejectedBy || []).includes(partner.phoneNumber) &&
+            (o.status === "confirmed" || o.status === "preparing")
           ).length
         );
       }
@@ -80,7 +82,9 @@ useEffect(() => {
           existing.assignedPartnerName !== fo.assignedPartnerName ||
           existing.deliveryOtp         !== fo.deliveryOtp         ||
           existing.deliveredAt         !== fo.deliveredAt         ||
-          existing.partnerEarning      !== fo.partnerEarning
+          existing.partnerEarning      !== fo.partnerEarning      ||
+          // ✅ Also detect when rejectedBy array changes on the order
+          JSON.stringify(existing.rejectedBy) !== JSON.stringify(fo.rejectedBy)
         ) {
           changed = true;
           return fo;
@@ -90,8 +94,11 @@ useEffect(() => {
 
       if (!changed && merged.length !== current.length) changed = true;
 
+      // ✅ Use rejectedBy from order itself so cross-device available count is accurate
       const availCount = remote.filter(o =>
-        !o.assignedPartner && (o.status === "confirmed" || o.status === "preparing")
+        !o.assignedPartner &&
+        !(o.rejectedBy || []).includes(partner.phoneNumber) &&
+        (o.status === "confirmed" || o.status === "preparing")
       ).length;
 
       if (availCount > lastCount) {
@@ -132,13 +139,30 @@ useEffect(() => {
     });
   };
 
-  // ✅ Save rejection to MongoDB so it persists across devices
+  // ✅ Rejection stored on the ORDER (rejectedBy array) so all devices see it
+  //    instantly via the existing 5s poll — no separate partner re-fetch needed
   const handleReject = async (order) => {
+    // 1️⃣ Instant hide on this device
     const updatedRejected = new Set([...rejected, order.id]);
     setRejected(updatedRejected);
+
+    // 2️⃣ Optimistically update local order list too
+    const updatedOrders = ordersRef.current.map(o =>
+      o.id === order.id
+        ? { ...o, rejectedBy: [...(o.rejectedBy || []), partner.phoneNumber] }
+        : o
+    );
+    syncOrders(updatedOrders);
+
     showToast("❌ Order rejected");
 
     try {
+      // 3️⃣ Patch the order's rejectedBy array — picked up by other devices in ≤5s
+      await patchOrder(order.customerPhone, order.id, {
+        rejectedBy: [...(order.rejectedBy || []), partner.phoneNumber],
+      });
+
+      // 4️⃣ Also persist to partner record for history / earnings reference
       await fetch("/api/delivery-partners", {
         method:  "PUT",
         headers: { "Content-Type": "application/json" },
@@ -199,8 +223,11 @@ useEffect(() => {
   };
 
   // ── Derived lists ──────────────────────────────────────────────────────────
+  // ✅ Double filter: local Set (instant) + order.rejectedBy (cross-device via poll)
   const available = orders.filter(o =>
-    !o.assignedPartner && !rejected.has(o.id) &&
+    !o.assignedPartner &&
+    !rejected.has(o.id) &&
+    !(o.rejectedBy || []).includes(partner.phoneNumber) &&
     (o.status === "confirmed" || o.status === "preparing")
   );
   const myActive = orders.filter(o =>
