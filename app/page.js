@@ -38,39 +38,72 @@ const LocationGate = ({ onAllowed }) => {
     }
   }, [onAllowed]);
 
-  const handleDetect = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser. Please enter your city manually.');
-      return;
-    }
-    setStatus('detecting');
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-          );
-          const data = await res.json();
-          const detectedCity =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            data.address?.county ||
-            '';
-          setInputVal(detectedCity);
-          checkCity(detectedCity);
-        } catch {
-          setStatus('idle');
-          alert('Could not detect your location. Please enter your city manually.');
-        }
-      },
-      () => {
+  const handleDetect = async () => {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser. Please enter your city manually.');
+    return;
+  }
+  setStatus('detecting');
+
+  // ✅ Capacitor native app — use Geolocation plugin
+  try {
+    const { Capacitor } = await import('@capacitor/core');
+    if (Capacitor.isNativePlatform()) {
+      const { Geolocation } = await import('@capacitor/geolocation');
+      const permission = await Geolocation.requestPermissions();
+      if (permission.location !== 'granted') {
         setStatus('idle');
         alert('Location access denied. Please enter your city manually.');
+        return;
       }
-    );
-  };
+      const pos = await Geolocation.getCurrentPosition();
+      const { latitude, longitude } = pos.coords;
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+      );
+      const data = await res.json();
+      const detectedCity =
+        data.address?.city ||
+        data.address?.town ||
+        data.address?.village ||
+        data.address?.county ||
+        '';
+      setInputVal(detectedCity);
+      checkCity(detectedCity);
+      return;
+    }
+  } catch (e) {
+    console.log('Capacitor geolocation failed:', e);
+  }
+
+  // ✅ Web fallback
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        );
+        const data = await res.json();
+        const detectedCity =
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.address?.county ||
+          '';
+        setInputVal(detectedCity);
+        checkCity(detectedCity);
+      } catch {
+        setStatus('idle');
+        alert('Could not detect your location. Please enter your city manually.');
+      }
+    },
+    () => {
+      setStatus('idle');
+      alert('Location access denied. Please enter your city manually.');
+    }
+  );
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
