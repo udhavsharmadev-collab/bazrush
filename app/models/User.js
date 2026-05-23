@@ -16,6 +16,7 @@ const OrderShopSchema = new mongoose.Schema({
   shopAddress: String,
   subtotal:    Number,
   items:       [OrderItemSchema],
+  rejectedBy: { type: [String], default: [] }, // ✅ ADD THIS
 
   id:          String,
   name:        String,
