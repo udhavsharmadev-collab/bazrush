@@ -181,7 +181,8 @@ export async function PATCH(request) {
     const wasDelivered = order.status === 'delivered';
 
     Object.assign(order, patch);
-    await user.save();
+user.markModified('orders'); // ✅ forces Mongoose to detect nested array change
+await user.save()
 
     const isCod = (m) => !!m && ['cod', 'cash'].some(k => m.toLowerCase().includes(k));
 

@@ -16,7 +16,6 @@ const OrderShopSchema = new mongoose.Schema({
   shopAddress: String,
   subtotal:    Number,
   items:       [OrderItemSchema],
-  rejectedBy: { type: [String], default: [] }, // ✅ ADD THIS
 
   id:          String,
   name:        String,
@@ -47,8 +46,13 @@ const OrderSchema = new mongoose.Schema({
   totalPrice: Number,
   totalCount: Number,
   deliveryOtp: String,
-  assignedPartner: String,
+  assignedPartner:     String,
   assignedPartnerName: String,
+  assignedAt:          String,
+  pickedUpAt:          String,
+  deliveredAt:         String,
+  partnerEarning:      Number,
+  rejectedBy: { type: [String], default: [] }, // ✅ CORRECT PLACE
 }, { _id: false });
 
 // Wishlist item — stores enough info to render the card without extra fetches
@@ -68,9 +72,9 @@ const UserSchema = new mongoose.Schema({
   address: String, lat: Number, lng: Number, password: String,
   cart:      { type: Array,              default: [] },
   orders:    { type: [OrderSchema],      default: [] },
-  reviews:   { type: Array,              default: [] },
+  reviews:   { type: Array,             default: [] },
   wishlist:  { type: [WishlistItemSchema], default: [] },
-  fcmToken:  { type: String, default: '' }, // ← new
+  fcmToken:  { type: String, default: '' },
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);
