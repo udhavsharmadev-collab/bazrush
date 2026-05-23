@@ -99,7 +99,7 @@ const LocationGate = ({ onAllowed }) => {
   } catch (e) {
     console.log('CATCH ERROR:', e.message, e.stack);
     setStatus('idle');
-   alert('Location services not available. Please turn on your GPS.');
+    alert('Location services not available. Please turn on your GPS.');
     return;
   }
 
@@ -494,4 +494,3 @@ const Page = () => {
   );
 };
 
-export default Page;
