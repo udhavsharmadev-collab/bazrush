@@ -38,6 +38,17 @@ const LocationGate = ({ onAllowed }) => {
     }
   }, [onAllowed]);
 
+  // Auto-retry when user comes back from GPS settings
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && status === 'gps-off') {
+        setStatus('idle');
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [status]);
+
   const handleDetect = async () => {
     setStatus('detecting');
 
@@ -87,6 +98,9 @@ const LocationGate = ({ onAllowed }) => {
           alert('Could not detect your city. Please enter it manually.');
           return;
         }
+
+        // ── Store in cookie for Android (same as web) ──
+        setCookie('user_city', detectedCity.trim(), 365);
 
         setInputVal(detectedCity);
         checkCity(detectedCity);
@@ -177,12 +191,24 @@ const LocationGate = ({ onAllowed }) => {
               <p className="text-sm text-gray-400 mb-4">
                 Turn on Location/GPS in your phone settings to auto-detect your city.
               </p>
-              <a
-                href="intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end"
-                className="block w-full bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold py-3 rounded-xl text-center mb-3 cursor-pointer"
+              <button
+                onClick={async () => {
+                  try {
+                    const { Capacitor } = await import('@capacitor/core');
+                    if (Capacitor.isNativePlatform()) {
+                      // Open Android location settings natively
+                      window.open('intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end', '_system');
+                    } else {
+                      alert('Please turn on GPS in your device settings.');
+                    }
+                  } catch {
+                    window.open('intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end', '_system');
+                  }
+                }}
+                className="w-full bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold py-3 rounded-xl text-center mb-3 cursor-pointer"
               >
                 📍 Open Location Settings
-              </a>
+              </button>
               <button
                 onClick={() => setStatus('idle')}
                 className="w-full border border-violet-200 text-violet-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
