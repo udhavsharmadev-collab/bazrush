@@ -38,32 +38,45 @@ const LocationGate = ({ onAllowed }) => {
     }
   }, [onAllowed]);
 
-   const handleDetect = async () => {
+  const handleDetect = async () => {
   setStatus('detecting');
 
   try {
     const { Capacitor } = await import('@capacitor/core');
+    console.log('STEP 1: isNativePlatform =', Capacitor.isNativePlatform());
+    
     if (Capacitor.isNativePlatform()) {
       const { Geolocation } = await import('@capacitor/geolocation');
+      console.log('STEP 2: Geolocation imported');
+      
       const permission = await Geolocation.requestPermissions();
+      console.log('STEP 3: permission =', JSON.stringify(permission));
+      
       if (permission.location !== 'granted') {
+        console.log('STEP 3a: permission denied, stopping');
         setStatus('idle');
         alert('Location access denied. Please enter your city manually.');
         return;
       }
 
+      console.log('STEP 4: calling getCurrentPosition...');
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
         timeout: 8000,
       });
+      console.log('STEP 5: pos =', JSON.stringify(pos));
 
       const { latitude, longitude } = pos.coords;
+      console.log('STEP 6: lat/lon =', latitude, longitude);
 
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-        { headers: { 'Accept-Language': 'en' } }   // ← force English results
+        { headers: { 'Accept-Language': 'en' } }
       );
+      console.log('STEP 7: nominatim status =', res.status);
+      
       const data = await res.json();
+      console.log('STEP 8: nominatim data =', JSON.stringify(data));
 
       const detectedCity =
         data.address?.city ||
@@ -71,9 +84,9 @@ const LocationGate = ({ onAllowed }) => {
         data.address?.village ||
         data.address?.county ||
         '';
+      console.log('STEP 9: detectedCity =', detectedCity);
 
       if (!detectedCity) {
-        // ← was silently spinning before
         setStatus('idle');
         alert('Could not detect your city. Please enter it manually.');
         return;
@@ -84,13 +97,12 @@ const LocationGate = ({ onAllowed }) => {
       return;
     }
   } catch (e) {
-    console.log('Capacitor location error:', e.message);
-    setStatus('idle');   // ← was missing, caused infinite spin
+    console.log('CATCH ERROR:', e.message, e.stack);
+    setStatus('idle');
     alert('Location error: ' + e.message + '. Please enter manually.');
     return;
   }
-
- 
+};
 
   // Web fallback
   if (!navigator.geolocation) {
@@ -214,7 +226,7 @@ const LocationGate = ({ onAllowed }) => {
       </div>
     </div>
   );
-};
+
 
 // ─── Product Card ──────────────────────────────────────────────────────────────
 const ProductCard = ({ product, onNavigate }) => (
