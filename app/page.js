@@ -24,7 +24,7 @@ const ALLOWED_CITY = 'panipat';
 // ─── Location Gate ─────────────────────────────────────────────────────────────
 const LocationGate = ({ onAllowed }) => {
   const [city, setCity] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | detecting | denied
+  const [status, setStatus] = useState('idle'); // idle | detecting | gps-off | denied
   const [inputVal, setInputVal] = useState('');
 
   const checkCity = useCallback((value) => {
@@ -39,104 +39,122 @@ const LocationGate = ({ onAllowed }) => {
   }, [onAllowed]);
 
   const handleDetect = async () => {
-  setStatus('detecting');
+    setStatus('detecting');
 
-  try {
-    const { Capacitor } = await import('@capacitor/core');
-    console.log('STEP 1: isNativePlatform =', Capacitor.isNativePlatform());
-    
-    if (Capacitor.isNativePlatform()) {
-      const { Geolocation } = await import('@capacitor/geolocation');
-      console.log('STEP 2: Geolocation imported');
-      
-      const permission = await Geolocation.requestPermissions();
-      console.log('STEP 3: permission =', JSON.stringify(permission));
-      
-      if (permission.location !== 'granted') {
-        console.log('STEP 3a: permission denied, stopping');
-        setStatus('idle');
-        alert('Location access denied. Please enter your city manually.');
-        return;
-      }
+    try {
+      const { Capacitor } = await import('@capacitor/core');
 
-      console.log('STEP 4: calling getCurrentPosition...');
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: false,
-        timeout: 8000,
-      });
-      console.log('STEP 5: pos =', JSON.stringify(pos));
+      if (Capacitor.isNativePlatform()) {
+        // ── Native Android/iOS path ──
+        const { Geolocation } = await import('@capacitor/geolocation');
 
-      const { latitude, longitude } = pos.coords;
-      console.log('STEP 6: lat/lon =', latitude, longitude);
+        const permission = await Geolocation.requestPermissions();
 
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      console.log('STEP 7: nominatim status =', res.status);
-      
-      const data = await res.json();
-      console.log('STEP 8: nominatim data =', JSON.stringify(data));
+        // Capacitor 8 may return coarseLocation/fineLocation keys
+        const granted =
+          permission.location === 'granted' ||
+          permission.coarseLocation === 'granted' ||
+          permission.fineLocation === 'granted';
 
-      const detectedCity =
-        data.address?.city ||
-        data.address?.town ||
-        data.address?.village ||
-        data.address?.county ||
-        '';
-      console.log('STEP 9: detectedCity =', detectedCity);
+        if (!granted) {
+          setStatus('idle');
+          alert('Location access denied. Please enter your city manually.');
+          return;
+        }
 
-      if (!detectedCity) {
-        setStatus('idle');
-        alert('Could not detect your city. Please enter it manually.');
-        return;
-      }
+        const pos = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: 15000,
+        });
 
-      setInputVal(detectedCity);
-      checkCity(detectedCity);
-      return;
-    }
-  } catch (e) {
-    console.log('CATCH ERROR:', e.message, e.stack);
-    setStatus('idle');
-    alert('Location services not available. Please turn on your GPS.');
-    return;
-  }
-
-
-  // Web fallback
-  if (!navigator.geolocation) {
-    setStatus('idle');
-    alert('Please enter your city manually.');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      try {
         const { latitude, longitude } = pos.coords;
+
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
         );
         const data = await res.json();
+
         const detectedCity =
           data.address?.city ||
           data.address?.town ||
           data.address?.village ||
           data.address?.county ||
           '';
+
+        if (!detectedCity) {
+          setStatus('idle');
+          alert('Could not detect your city. Please enter it manually.');
+          return;
+        }
+
         setInputVal(detectedCity);
         checkCity(detectedCity);
-      } catch {
-        setStatus('idle');
-        alert('Could not detect your location. Please enter manually.');
+        return;
       }
-    },
-    () => {
-      setStatus('idle');
-      alert('Location access denied. Please enter manually.');
+    } catch (e) {
+      // GPS turned off on device
+      if (
+        e.message?.includes('Location services are not enabled') ||
+        e.message?.includes('OS-PLUG-GLOC-0007') ||
+        e.message?.includes('location disabled')
+      ) {
+        setStatus('gps-off');
+      } else {
+        setStatus('idle');
+        alert('Location error: ' + e.message + '. Please enter manually.');
+      }
+      return;
     }
-  );
-};
+
+    // ── Web fallback ──
+    if (!navigator.geolocation) {
+      setStatus('idle');
+      alert('Please enter your city manually.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const data = await res.json();
+          const detectedCity =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.county ||
+            '';
+          if (!detectedCity) {
+            setStatus('idle');
+            alert('Could not detect your city. Please enter it manually.');
+            return;
+          }
+          setInputVal(detectedCity);
+          checkCity(detectedCity);
+        } catch {
+          setStatus('idle');
+          alert('Could not detect your location. Please enter manually.');
+        }
+      },
+      (err) => {
+        setStatus('idle');
+        if (err.code === 1) {
+          alert('Location access denied. Please enter manually.');
+        } else if (err.code === 2) {
+          setStatus('gps-off');
+        } else {
+          alert('Could not detect location. Please enter manually.');
+        }
+      },
+      { timeout: 15000, enableHighAccuracy: false }
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!inputVal.trim()) return;
@@ -150,7 +168,53 @@ const LocationGate = ({ onAllowed }) => {
         <div className="h-1.5 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500" />
 
         <div className="p-8 text-center">
-          {status !== 'denied' ? (
+
+          {/* ── GPS Off screen ── */}
+          {status === 'gps-off' ? (
+            <>
+              <div className="text-5xl mb-4">📡</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">GPS is Off</h2>
+              <p className="text-sm text-gray-400 mb-4">
+                Turn on Location/GPS in your phone settings to auto-detect your city.
+              </p>
+              <a
+                href="intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end"
+                className="block w-full bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold py-3 rounded-xl text-center mb-3 cursor-pointer"
+              >
+                📍 Open Location Settings
+              </a>
+              <button
+                onClick={() => setStatus('idle')}
+                className="w-full border border-violet-200 text-violet-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
+              >
+                Enter City Manually Instead
+              </button>
+            </>
+
+          ) : status === 'denied' ? (
+            /* ── Not available screen ── */
+            <>
+              <div className="text-5xl mb-4">😔</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Not Available Yet</h2>
+              <p className="text-sm text-gray-400 mb-1">
+                Sorry, we're currently not available in
+              </p>
+              <p className="text-base font-bold text-rose-500 mb-4">{city}</p>
+              <p className="text-xs text-gray-400 bg-purple-50 rounded-xl px-4 py-3 mb-6">
+                🚀 We're expanding fast! Right now we only serve{' '}
+                <span className="font-semibold text-violet-600">Panipat</span>.
+                We'll be in your city soon.
+              </p>
+              <button
+                onClick={() => { setStatus('idle'); setInputVal(''); }}
+                className="w-full border border-violet-200 text-violet-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
+              >
+                Try a Different City
+              </button>
+            </>
+
+          ) : (
+            /* ── Default: idle / detecting ── */
             <>
               <div className="text-5xl mb-4">📍</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">Where are you?</h2>
@@ -170,9 +234,7 @@ const LocationGate = ({ onAllowed }) => {
                     Detecting…
                   </>
                 ) : (
-                  <>
-                    <span>🎯</span> Detect My Location
-                  </>
+                  <><span>🎯</span> Detect My Location</>
                 )}
               </button>
 
@@ -200,34 +262,13 @@ const LocationGate = ({ onAllowed }) => {
                 </button>
               </form>
             </>
-          ) : (
-            /* ── Not available screen ── */
-            <>
-              <div className="text-5xl mb-4">😔</div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Not Available Yet</h2>
-              <p className="text-sm text-gray-400 mb-1">
-                Sorry, we're currently not available in
-              </p>
-              <p className="text-base font-bold text-rose-500 mb-4">{city}</p>
-              <p className="text-xs text-gray-400 bg-purple-50 rounded-xl px-4 py-3 mb-6">
-                🚀 We're expanding fast! Right now we only serve{' '}
-                <span className="font-semibold text-violet-600">Panipat</span>.
-                We'll be in your city soon.
-              </p>
-              <button
-                onClick={() => { setStatus('idle'); setInputVal(''); }}
-                className="w-full border border-violet-200 text-violet-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
-              >
-                Try a Different City
-              </button>
-            </>
           )}
+
         </div>
       </div>
     </div>
   );
 };
-
 
 // ─── Product Card ──────────────────────────────────────────────────────────────
 const ProductCard = ({ product, onNavigate }) => (
@@ -321,7 +362,6 @@ const Page = () => {
     if (saved && saved.toLowerCase() === ALLOWED_CITY) {
       setLocationAllowed(true);
     } else if (saved) {
-      // Had a cookie but wrong city — show gate again
       setLocationAllowed(false);
     } else {
       setLocationAllowed(false);
@@ -397,7 +437,6 @@ const Page = () => {
 
   // ── Render ──
   if (locationAllowed === null) {
-    // Brief flash while reading cookie
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center">
         <span className="w-8 h-8 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
