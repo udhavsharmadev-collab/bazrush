@@ -38,53 +38,73 @@ const LocationGate = ({ onAllowed }) => {
     }
   }, [onAllowed]);
 
- const handleDetect = async () => {
+const handleDetect = async () => {
   setStatus('detecting');
 
-  // ✅ Capacitor native app FIRST
   try {
     const { Capacitor } = await import('@capacitor/core');
     if (Capacitor.isNativePlatform()) {
       const { Geolocation } = await import('@capacitor/geolocation');
-      const permission = await Geolocation.requestPermissions();
+      
+      // ✅ Request permission separately so errors don't swallow it
+      let permission;
+      try {
+        permission = await Geolocation.requestPermissions();
+      } catch (e) {
+        console.log('Permission request failed:', e.message);
+        setStatus('idle');
+        alert('Could not request location permission. Please enter your city manually.');
+        return;
+      }
+
       if (permission.location !== 'granted') {
         setStatus('idle');
         alert('Location access denied. Please enter your city manually.');
         return;
       }
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: false,
-        timeout: 8000,
-      });
+
+      // ✅ Get position separately
+      let pos;
+      try {
+        pos = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: 8000,
+        });
+      } catch (e) {
+        console.log('Get position failed:', e.message);
+        setStatus('idle');
+        alert('Could not get your location. Please enter your city manually.');
+        return;
+      }
+
       const { latitude, longitude } = pos.coords;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-        { signal: controller.signal }
-      );
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      const detectedCity =
-        data.address?.city ||
-        data.address?.town ||
-        data.address?.village ||
-        data.address?.county ||
-        '';
-      setInputVal(detectedCity);
-      checkCity(detectedCity);
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        );
+        const data = await res.json();
+        const detectedCity =
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.address?.county ||
+          '';
+        setInputVal(detectedCity);
+        checkCity(detectedCity);
+      } catch (e) {
+        setStatus('idle');
+        alert('Could not detect city. Please enter manually.');
+      }
       return;
     }
   } catch (e) {
-    console.log('Capacitor geolocation failed:', e.message);
-    setStatus('idle');
-    alert('Could not detect location. Please enter your city manually.');
-    return;
+    console.log('Capacitor import failed:', e.message);
   }
 
   // ✅ Web fallback
   if (!navigator.geolocation) {
-    alert('Geolocation is not supported. Please enter your city manually.');
+    alert('Geolocation not supported. Please enter your city manually.');
     setStatus('idle');
     return;
   }
@@ -93,13 +113,9 @@ const LocationGate = ({ onAllowed }) => {
     async (pos) => {
       try {
         const { latitude, longitude } = pos.coords;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-          { signal: controller.signal }
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
         );
-        clearTimeout(timeoutId);
         const data = await res.json();
         const detectedCity =
           data.address?.city ||
