@@ -252,8 +252,8 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
   }, [isOutForDelivery, partnerPhone, order.customer?.lat, order.customer?.lng]);
 
   const ETA_STATIC = {
-    confirmed: { label: '~30 min', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    preparing:  { label: '~20 min', color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'   },
+    confirmed: { label: '~90 min', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    preparing:  { label: '~30 min', color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'   },
   };
   const etaStatic = ETA_STATIC[order.status];
 

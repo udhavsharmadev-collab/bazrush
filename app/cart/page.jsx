@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import PhoneAuthModal from '../components/auth/PhoneAuthModal';
 
 // ── Delivery window: 12:00 AM (0) → 9:00 PM (21) ─────────────────────────────
-const DELIVERY_START = 0;   // midnight
-const DELIVERY_END   = 21;  // 9 PM (orders accepted up to 8:59 PM)
+const DELIVERY_START = 10;  // 10 AM
+const DELIVERY_END   = 19;  // 7 PM (orders accepted up to 6:59 PM)
 
 function getDeliveryStatus() {
   const now  = new Date();
@@ -54,7 +54,7 @@ const ClosedBanner = ({ minutesUntilOpen }) => (
       <div className="flex-1">
         <p className="text-white font-black text-sm mb-0.5">We're closed right now</p>
         <p className="text-slate-400 text-xs leading-relaxed">
-          Deliveries run <span className="text-amber-400 font-bold">12:00 AM – 9:00 PM</span> daily.
+          Orders accepted <span className="text-amber-400 font-bold">10:00 AM – 7:00 PM</span> daily.
           Our single delivery partner ensures every order gets the care it deserves ⚡
         </p>
         {minutesUntilOpen !== null && (
@@ -77,7 +77,7 @@ const ClosingSoonBanner = ({ minutesUntilClose }) => (
     <div>
       <p className="text-amber-800 font-black text-xs">Ordering closes soon!</p>
       <p className="text-amber-600 text-[11px]">
-        Last orders in <span className="font-black">{formatCountdown(minutesUntilClose)}</span> · Deliveries until 9:00 PM
+        Last orders in <span className="font-black">{formatCountdown(minutesUntilClose)}</span> · Deliveries until 7:00 PM
       </p>
     </div>
   </div>
@@ -166,9 +166,9 @@ const CartPage = () => {
         <div className="mx-4 mt-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
           <p className="text-emerald-700 text-[11px] font-bold flex-1">
-            Delivery open · 20–25 min ⚡
+            Delivery open · 60–90 min ⚡
           </p>
-          <span className="text-[10px] text-emerald-500 font-semibold">until 9:00 PM</span>
+          <span className="text-[10px] text-emerald-500 font-semibold">until 7:00 PM</span>
         </div>
       )}
 
@@ -273,7 +273,7 @@ const CartPage = () => {
           <div className="w-full py-4 rounded-2xl text-sm font-black bg-slate-100 border-2 border-slate-200 text-slate-400 flex flex-col items-center justify-center gap-0.5 cursor-not-allowed select-none">
             <span>Ordering Unavailable Right Now 🌙</span>
             <span className="text-[10px] font-semibold text-slate-400">
-              Come back between <span className="font-black text-slate-500">12:00 AM – 9:00 PM</span>
+              Come back between <span className="font-black text-slate-500">10:00 AM – 7:00 PM</span>
             </span>
           </div>
         )}
