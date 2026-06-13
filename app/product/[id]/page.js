@@ -6,7 +6,7 @@ import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/Wishlistcontext";
 import { Star, Heart, Check } from "lucide-react";
-import ARViewer from '../../components/ARVIEWER';
+import ARViewer from '../../components/ARViewer';
 
 const StarDisplay = ({ rating, size = 'sm' }) => (
   <div className="flex gap-0.5">
