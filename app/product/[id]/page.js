@@ -6,6 +6,7 @@ import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/Wishlistcontext";
 import { Star, Heart, Check } from "lucide-react";
+import ARViewer from '../../components/ARVIEWER';
 
 const StarDisplay = ({ rating, size = 'sm' }) => (
   <div className="flex gap-0.5">
@@ -442,6 +443,10 @@ if (found) {
       </div>
     </div>
   )}
+  {/* ADD THIS LINE ↓ */}
+<ARViewer product={product} />
+
+<div className="h-px bg-gray-100" />
 
   <div className="h-px bg-gray-100" />
 
