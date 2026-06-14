@@ -560,13 +560,14 @@ const CheckoutPage = () => {
             ) : (
               <>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
-                    placeholder="Enter coupon code"
-                    className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm font-black uppercase tracking-wide text-violet-700 placeholder-gray-400 placeholder:font-medium placeholder:tracking-normal placeholder:normal-case outline-none focus:border-violet-400 focus:bg-white focus:shadow-md focus:shadow-violet-100 transition-all"
-                  />
+               <input
+  type="text"
+  value={couponCode}
+  onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }}
+  placeholder="Enter coupon code"
+  style={{ textTransform: 'uppercase' }}
+  className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm font-black uppercase tracking-wide text-violet-700 placeholder-gray-400 placeholder:font-medium placeholder:tracking-normal placeholder:normal-case outline-none focus:border-violet-400 focus:bg-white focus:shadow-md focus:shadow-violet-100 transition-all"
+/>
                   <button
                     onClick={() => applyCouponByCode(couponCode)}
                     className="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black shadow-md shadow-violet-200 hover:scale-[1.02] active:scale-95 transition-all"
