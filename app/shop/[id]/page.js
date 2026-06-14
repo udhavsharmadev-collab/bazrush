@@ -8,6 +8,7 @@ const ShopPage = () => {
   const router = useRouter();
   const [shop, setShop] = useState(null);
   const [shopProducts, setShopProducts] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
   const [todayDay, setTodayDay] = useState("");
   const [rating, setRating] = useState(null);
@@ -44,6 +45,10 @@ const ShopPage = () => {
         setShopProducts(products.filter((p) => p.shopId === id));
 
         await fetchShopRating(id);
+
+        if (foundShop?.ownerPhone) {
+          await fetchCoupons(foundShop.ownerPhone);
+        }
       } catch (err) {
         console.error('Failed to load shop data:', err);
       } finally {
@@ -65,6 +70,16 @@ const ShopPage = () => {
       if (count > 0) setRating({ avg: (total / count).toFixed(1), count });
     } catch (err) {
       console.error('Failed to fetch shop rating:', err);
+    }
+  };
+
+  const fetchCoupons = async (sellerPhone) => {
+    try {
+      const res = await fetch(`/api/coupons?sellerPhone=${encodeURIComponent(sellerPhone)}`);
+      const data = await res.json();
+      setCoupons(data.coupons || []);
+    } catch (err) {
+      console.error('Failed to fetch coupons:', err);
     }
   };
 
@@ -187,6 +202,30 @@ const ShopPage = () => {
             <span className="text-xs text-gray-600 font-medium whitespace-nowrap">{inStockProducts.length} In Stock</span>
           </div>
         </div>
+
+        {/* Coupons */}
+        {coupons.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto pb-2 mb-4">
+            {coupons.map((c) => (
+              <div
+                key={c.id}
+                className="flex-shrink-0 relative flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 min-w-[220px]"
+              >
+                <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
+                <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
+                  🎟️
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-violet-700 text-sm tracking-wide">{c.code}</p>
+                  <p className="text-[11px] text-gray-500 font-medium">
+                    ₹{c.discountAmount} off{c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-5">
