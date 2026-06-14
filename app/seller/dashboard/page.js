@@ -11,6 +11,7 @@ import ShopTab from './components/ShopTab';
 import ReviewsTab from './components/ReviewsTab';
 import ProfileTab from './components/ProfileTab';
 import ProductsTab from './components/ProductsTab';
+import CouponsTab from './components/CouponsTab';
 
 const SellerDashboard = () => {
   const router = useRouter();
@@ -67,6 +68,7 @@ const SellerDashboard = () => {
           {activeTab === 'shop'      && <ShopTab seller={seller} />}
           {activeTab === 'reviews'   && <ReviewsTab seller={seller} />}
           {activeTab === 'products'  && <ProductsTab seller={seller} />}
+          {activeTab === 'coupons'   && <CouponsTab seller={seller} />}
           {activeTab === 'profile'   && (
             <ProfileTab seller={seller} isEditing={isEditing} editMessage={editMessage} editFormData={editFormData}
               handleEditChange={handleEditChange} handleSaveProfile={handleSaveProfile}

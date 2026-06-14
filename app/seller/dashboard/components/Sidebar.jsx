@@ -1,10 +1,11 @@
-import { LogOut, LayoutDashboard, ShoppingBag, Store, MessageCircle, User, X, Menu, ChevronRight, FileText } from 'lucide-react';
+import { LogOut, LayoutDashboard, ShoppingBag, Store, MessageCircle, User, X, Menu, ChevronRight, FileText, Ticket } from 'lucide-react';
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'orders', label: 'Orders', icon: FileText},
   { id: 'shop', label: 'Your Shop', icon: Store },
   { id: 'products', label: 'Products', icon: ShoppingBag },
+  { id: 'coupons', label: 'Coupons', icon: Ticket },
   { id: 'reviews', label: 'Reviews', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
@@ -119,4 +120,4 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, handleL
   );
 };
 
-export default Sidebar;6
+export default Sidebar;
