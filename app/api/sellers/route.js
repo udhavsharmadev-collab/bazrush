@@ -43,14 +43,13 @@ export async function GET(request) {
     }
 
     if (shopId) {
-      // Match against both 'shops.id' and 'shops.shopId'
-      const seller = await Seller.findOne({
-        $or: [{ 'shops.id': shopId }, { 'shops.shopId': shopId }],
-      }).lean();
-      if (!seller) return Response.json({ shop: null }, { status: 404 });
-      const shop = seller.shops.find(s => s.id === shopId || s.shopId === shopId);
-      return Response.json({ shop: { ...normaliseShop(shop), ownerName: seller.name } });
-    }
+  const seller = await Seller.findOne({
+    $or: [{ 'shops.id': shopId }, { 'shops.shopId': shopId }],
+  }).lean();
+  if (!seller) return Response.json({ shop: null }, { status: 404 });
+  const shop = seller.shops.find(s => s.id === shopId || s.shopId === shopId);
+  return Response.json({ shop: { ...normaliseShop(shop), ownerName: seller.name, ownerPhone: seller.phoneNumber } });
+}
 
     const sellers = await Seller.find({}).lean();
     return Response.json(

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, User, Phone, Mail, ShoppingBag } from 'lucide-react';
+import { MapPin, User, Phone, Mail, ShoppingBag, Tag, X, Check } from 'lucide-react';
 import PhoneAuthModal from '../components/auth/PhoneAuthModal';
 
 const PLATFORM_FEE = 0;
@@ -45,6 +45,14 @@ async function fetchShopById(shopId) {
     const data = await res.json();
     return data?.shop || null;
   } catch { return null; }
+}
+
+async function fetchCouponsBySellerPhone(sellerPhone) {
+  try {
+    const res = await fetch(`/api/coupons?sellerPhone=${encodeURIComponent(sellerPhone)}`);
+    const data = await res.json();
+    return data?.coupons || [];
+  } catch { return []; }
 }
 
 function groupByShop(cartItems) {
@@ -187,7 +195,37 @@ const CheckoutPage = () => {
   const [distKm, setDistKm]           = useState(null);
   const [calcingFee, setCalcingFee]   = useState(false);
 
-  const grandTotal = totalPrice + deliveryFee + PLATFORM_FEE;
+  // ── Coupons ───────────────────────────────────────────────────────────────
+  const [availableCoupons, setAvailableCoupons] = useState({}); // shopId -> [coupons]
+  const [couponCode, setCouponCode]   = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // { shopId, code, discountAmount, minCartValue }
+  const [couponError, setCouponError] = useState('');
+
+  // Fetch available coupons for each shop once we know their owner's phone
+  useEffect(() => {
+    const shopIds = Object.keys(shopInfoMap);
+    if (!shopIds.length) return;
+
+    let cancelled = false;
+    Promise.all(
+      shopIds.map(async (shopId) => {
+        const sellerPhone = shopInfoMap[shopId]?.ownerPhone;
+        if (!sellerPhone) return [shopId, []];
+        const coupons = await fetchCouponsBySellerPhone(sellerPhone);
+        return [shopId, coupons];
+      })
+    ).then((entries) => {
+      if (cancelled) return;
+      const map = {};
+      for (const [shopId, coupons] of entries) map[shopId] = coupons;
+      setAvailableCoupons(map);
+    });
+
+    return () => { cancelled = true; };
+  }, [shopInfoMap]);
+
+  const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const grandTotal = Math.max(totalPrice + deliveryFee + PLATFORM_FEE - couponDiscount, 0);
 
   // ── Form ──────────────────────────────────────────────────────────────────
   const [form, setForm]                   = useState({ name: '', phone: '', email: '', address: '' });
@@ -252,6 +290,68 @@ const CheckoutPage = () => {
     return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, shopInfoMap]);
 
+  // ── Coupon helpers ────────────────────────────────────────────────────────
+  const shopGroupsForCoupons = groupByShop(cartItems);
+
+  // Subtotal for a given shop (used to validate min cart value)
+  const getShopSubtotal = (shopId) => {
+    const items = shopGroupsForCoupons[shopId] || [];
+    return items.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  };
+
+  // Flatten all available coupons across shops with shop context attached
+  const allAvailableCoupons = Object.entries(availableCoupons).flatMap(([shopId, coupons]) =>
+    coupons.map(c => ({ ...c, shopId, shopName: shopInfoMap[shopId]?.shopName || 'Shop' }))
+  );
+
+  const applyCouponByCode = (code, shopIdHint) => {
+    setCouponError('');
+    const normalized = code.trim().toUpperCase();
+    if (!normalized) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    // Find matching coupon — prefer the hinted shop, otherwise search all
+    let match = null;
+    if (shopIdHint) {
+      match = (availableCoupons[shopIdHint] || []).find(c => c.code === normalized);
+      if (match) match = { ...match, shopId: shopIdHint };
+    }
+    if (!match) {
+      for (const [shopId, coupons] of Object.entries(availableCoupons)) {
+        const found = coupons.find(c => c.code === normalized);
+        if (found) { match = { ...found, shopId }; break; }
+      }
+    }
+
+    if (!match) {
+      setCouponError('Invalid coupon code');
+      return;
+    }
+
+    const shopSubtotal = getShopSubtotal(match.shopId);
+    if (shopSubtotal < (match.minCartValue || 0)) {
+      setCouponError(`Add ₹${(match.minCartValue - shopSubtotal)} more from ${shopInfoMap[match.shopId]?.shopName || 'this shop'} to use this coupon`);
+      return;
+    }
+
+    setAppliedCoupon({
+      shopId: match.shopId,
+      code: match.code,
+      discountAmount: match.discountAmount,
+      minCartValue: match.minCartValue || 0,
+    });
+    setCouponCode(match.code);
+    setCouponError('');
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
+
   // ── Place order ───────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     setPlacing(true);
@@ -261,6 +361,8 @@ const CheckoutPage = () => {
 
     const shops = Object.entries(shopGroups).map(([shopId, items]) => {
       const s = shopInfoMap[shopId];
+      const shopSubtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
+      const couponHere = appliedCoupon && appliedCoupon.shopId === shopId ? appliedCoupon : null;
       return {
         shopId,
         shopName:     s?.shopName    || 'Unknown Shop',
@@ -277,7 +379,9 @@ const CheckoutPage = () => {
   imageId: item.cartImageId ?? item.product.cartImageId ?? item.product.mainImageId,  // ← fixed
   productId:     item.product.id,
 })),
-        subtotal: items.reduce((s, i) => s + i.product.price * i.quantity, 0),
+        subtotal: shopSubtotal,
+        couponApplied: couponHere ? couponHere.code : null,
+        couponDiscount: couponHere ? couponHere.discountAmount : 0,
       };
     });
 
@@ -298,6 +402,8 @@ const CheckoutPage = () => {
       deliveryFee,
       deliveryDistanceKm: distKm,
       platformFee:        PLATFORM_FEE,
+      couponCode:         appliedCoupon?.code || null,
+      couponDiscount:     couponDiscount,
       totalPrice:         grandTotal,
       totalCount,
     };
@@ -423,6 +529,86 @@ const CheckoutPage = () => {
           </div>
         </div>
 
+        {/* Coupons */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 pt-5 pb-3 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-violet-100 flex items-center justify-center">
+              <Tag className="w-4 h-4 text-violet-600" />
+            </div>
+            <p className="text-sm font-black text-gray-900">Apply Coupon</p>
+          </div>
+
+          <div className="px-5 pb-5 space-y-3">
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-emerald-700 tracking-wide truncate">{appliedCoupon.code}</p>
+                    <p className="text-[11px] text-emerald-500 font-semibold">₹{appliedCoupon.discountAmount} off applied</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRemoveCoupon}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-emerald-100 transition-all flex-shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                    placeholder="Enter coupon code"
+                    className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm font-black uppercase tracking-wide text-violet-700 placeholder-gray-400 placeholder:font-medium placeholder:tracking-normal placeholder:normal-case outline-none focus:border-violet-400 focus:bg-white focus:shadow-md focus:shadow-violet-100 transition-all"
+                  />
+                  <button
+                    onClick={() => applyCouponByCode(couponCode)}
+                    className="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black shadow-md shadow-violet-200 hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    Apply
+                  </button>
+                </div>
+
+                {couponError && (
+                  <p className="text-[11px] text-rose-500 font-semibold px-1">{couponError}</p>
+                )}
+
+                {allAvailableCoupons.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Available Coupons</p>
+                    <div className="flex flex-col gap-2">
+                      {allAvailableCoupons.map((c) => (
+                        <button
+                          key={`${c.shopId}-${c.code}`}
+                          onClick={() => applyCouponByCode(c.code, c.shopId)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 hover:border-violet-300 transition-all text-left"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
+                            🎟️
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-black text-violet-700 tracking-wide">{c.code}</p>
+                            <p className="text-[11px] text-gray-500 font-medium truncate">
+                              ₹{c.discountAmount} off{c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''} · {c.shopName}
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-black text-violet-500 flex-shrink-0">Tap to apply</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Order summary */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 pt-5 pb-3 flex items-center gap-2">
@@ -505,6 +691,14 @@ const CheckoutPage = () => {
                 <span className="text-gray-400 font-medium">Platform Fees</span>
                 <span className="font-black text-emerald-500">FREE</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-emerald-500 font-bold flex items-center gap-1">
+                    <Tag className="w-3 h-3" /> Coupon ({appliedCoupon.code})
+                  </span>
+                  <span className="font-black text-emerald-500">−₹{appliedCoupon.discountAmount}</span>
+                </div>
+              )}
               <div className="flex justify-between text-base pt-1 border-t border-gray-100 mt-1">
                 <span className="font-black text-gray-900">Total</span>
                 <span className="font-black bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent text-lg">₹{grandTotal}</span>
