@@ -15,6 +15,13 @@ function timeAgo(dateStr) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+// Net amount after subtracting coupon discount from a shop entry
+function getNetShopAmount(shop) {
+  const subtotal = shop?.subtotal || 0;
+  const discount = shop?.couponDiscount || 0;
+  return Math.max(subtotal - discount, 0);
+}
+
 // ── Shared UI primitives ──────────────────────────────────────────────────────
 export const StatCard = ({ label, value, sub, subColor, icon, gradient }) => (
   <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
@@ -107,23 +114,32 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
 
   const activePartners = Object.values(partners).filter(p => p.isOnline).length;
 
-  // Revenue: sum shop subtotals across all orders
-  const totalRevenue    = allOrders.reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.subtotal || 0), 0) + (o.deliveryFee || 0), 0);
+  // ✅ Revenue: net of coupon discounts (excludes delivery fee from seller revenue)
+  const totalRevenue = allOrders.reduce(
+    (s, o) => s + (o.shops || []).reduce((ss, sh) => ss + getNetShopAmount(sh), 0) + (o.deliveryFee || 0),
+    0
+  );
 
-  // ✅ Total delivery fees ever collected — never resets
+  // ✅ Total coupon savings across all orders
+  const totalCouponSavings = allOrders.reduce(
+    (s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.couponDiscount || 0), 0),
+    0
+  );
+
+  // Total delivery fees ever collected
   const totalDeliveryFees = allOrders.reduce((s, o) => s + (o.deliveryFee || 0), 0);
 
   const totalOrders     = allOrders.length;
   const deliveredOrders = allOrders.filter(o => o.status === "delivered").length;
   const pendingOrders   = totalOrders - deliveredOrders;
 
-  // Last 7 days revenue
+  // ✅ Last 7 days revenue: net of coupons
   const days7 = getLast7Days();
   const revenueByDay = days7.map(({ label, dateStr }) => ({
     label,
     revenue: allOrders
       .filter(o => o.placedAt?.startsWith(dateStr))
-      .reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + (sh.subtotal || 0), 0), 0),
+      .reduce((s, o) => s + (o.shops || []).reduce((ss, sh) => ss + getNetShopAmount(sh), 0), 0),
   }));
   const maxDayRev = Math.max(...revenueByDay.map(d => d.revenue), 1);
 
@@ -170,10 +186,11 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
             <h2 className="text-5xl font-black text-white">{fmtRupee(totalRevenue)}</h2>
             <p className="text-purple-200 text-xs mt-2 font-semibold">
               {deliveredOrders} delivered · {pendingOrders} pending
+              {totalCouponSavings > 0 && ` · ${fmtRupee(totalCouponSavings)} in coupons`}
             </p>
           </div>
-          {/* ✅ 3 cards: Delivered, Pending, Delivery Fees */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* 4 cards: Delivered, Pending, Delivery Fees, Coupon Savings */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-2xl font-black text-white">{fmt(deliveredOrders)}</p>
               <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Delivered</p>
@@ -185,6 +202,10 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
             <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-2xl font-black text-amber-300">{fmtRupee(totalDeliveryFees)}</p>
               <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Delivery Fees</p>
+            </div>
+            <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
+              <p className="text-2xl font-black text-emerald-300">{fmtRupee(totalCouponSavings)}</p>
+              <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider mt-0.5">Coupons Used</p>
             </div>
           </div>
         </div>
@@ -262,7 +283,9 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
           {recentOrders.length === 0 ? <Empty text="No orders yet" /> : (
             <div className="space-y-3">
               {recentOrders.map((o, i) => {
-                const orderRevenue = (o.shops || []).reduce((s, sh) => s + (sh.subtotal || 0), 0);
+                // ✅ Net revenue per order (after coupon deductions)
+                const netRevenue = (o.shops || []).reduce((s, sh) => s + getNetShopAmount(sh), 0);
+                const totalCoupon = (o.shops || []).reduce((s, sh) => s + (sh.couponDiscount || 0), 0);
                 return (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
                     <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center text-base flex-shrink-0">
@@ -273,7 +296,10 @@ export default function OverviewTab({ data, onRefresh, refreshing }) {
                       <p className="text-[10px] text-gray-400 font-mono truncate">{o.id}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-black text-purple-700">{fmtRupee(orderRevenue)}</p>
+                      <p className="text-sm font-black text-purple-700">{fmtRupee(netRevenue)}</p>
+                      {totalCoupon > 0 && (
+                        <p className="text-[9px] text-emerald-500 font-bold">−{fmtRupee(totalCoupon)} coupon</p>
+                      )}
                       <StatusBadge type={STATUS_STYLE[o.status] || "gray"}>
                         {o.status?.replace(/_/g, " ")}
                       </StatusBadge>
