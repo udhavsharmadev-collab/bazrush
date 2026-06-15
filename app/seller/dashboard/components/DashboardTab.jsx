@@ -31,6 +31,15 @@ function getLast7Days() {
   return days;
 }
 
+// Net amount the seller actually earns from this shop's portion of an order,
+// after subtracting any coupon discount applied to that shop. Delivery fee is
+// excluded entirely since it isn't part of seller revenue.
+function getNetShopAmount(shop) {
+  const subtotal = shop?.subtotal || 0;
+  const discount = shop?.couponDiscount || 0;
+  return Math.max(subtotal - discount, 0);
+}
+
 const StatCard = ({ label, value, sub, subColor, gradient }) => (
   <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
     <p className="text-gray-500 text-sm font-medium mb-2">{label}</p>
@@ -98,8 +107,8 @@ const DashboardTab = ({ seller }) => {
         }
       }
 
-      // 5. Compute stats
-      const totalRevenue = matched.reduce((s, o) => s + (o.shop.subtotal || 0), 0);
+      // 5. Compute stats (revenue figures are net of any coupon discount)
+      const totalRevenue = matched.reduce((s, o) => s + getNetShopAmount(o.shop), 0);
       const totalOrders = matched.length;
 
       const todayStr = new Date().toISOString().split('T')[0];
@@ -111,7 +120,7 @@ const DashboardTab = ({ seller }) => {
         label,
         revenue: matched
           .filter(o => o.placedAt?.startsWith(dateStr))
-          .reduce((s, o) => s + (o.shop.subtotal || 0), 0),
+          .reduce((s, o) => s + getNetShopAmount(o.shop), 0),
       }));
 
       // Last 3 months revenue
@@ -123,7 +132,7 @@ const DashboardTab = ({ seller }) => {
             const d = new Date(o.placedAt);
             return d.getFullYear() === year && d.getMonth() === month;
           })
-          .reduce((s, o) => s + (o.shop.subtotal || 0), 0),
+          .reduce((s, o) => s + getNetShopAmount(o.shop), 0),
       }));
 
       // Recent 5 orders
@@ -303,23 +312,30 @@ const DashboardTab = ({ seller }) => {
             <div className="text-center py-10 text-gray-300 text-sm font-semibold">No orders yet</div>
           ) : (
             <div className="space-y-3">
-              {stats.recentOrders.map((o, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center text-base flex-shrink-0">
-                    {STATUS_EMOJI[o.status] || '📦'}
+              {stats.recentOrders.map((o, i) => {
+                const netAmount = getNetShopAmount(o.shop);
+                const hasCoupon = (o.shop?.couponDiscount || 0) > 0;
+                return (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center text-base flex-shrink-0">
+                      {STATUS_EMOJI[o.status] || '📦'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-gray-800 truncate">{o.customer?.name}</p>
+                      <p className="text-[10px] text-gray-400 font-mono truncate">{o.orderId}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-black text-purple-700">₹{netAmount}</p>
+                      {hasCoupon && (
+                        <p className="text-[9px] text-emerald-500 font-bold">−₹{o.shop.couponDiscount} ({o.shop.couponApplied})</p>
+                      )}
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${STATUS_STYLE[o.status] || 'bg-gray-100 text-gray-600'}`}>
+                        {o.status?.replace(/_/g, ' ')}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-gray-800 truncate">{o.customer?.name}</p>
-                    <p className="text-[10px] text-gray-400 font-mono truncate">{o.orderId}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-black text-purple-700">₹{o.shop.subtotal}</p>
-                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${STATUS_STYLE[o.status] || 'bg-gray-100 text-gray-600'}`}>
-                      {o.status?.replace(/_/g, ' ')}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
