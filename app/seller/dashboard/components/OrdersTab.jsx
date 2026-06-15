@@ -29,6 +29,15 @@ function getShopId(shop) {
   return shop?.shopId || shop?.id || '';
 }
 
+// Net amount the seller actually earns from this shop's portion of the order,
+// after subtracting any coupon discount applied to that shop. Delivery fee is
+// excluded entirely since it isn't part of seller revenue.
+function getNetShopAmount(shop) {
+  const subtotal = shop?.subtotal || 0;
+  const discount = shop?.couponDiscount || 0;
+  return Math.max(subtotal - discount, 0);
+}
+
 const OrdersTab = ({ seller }) => {
   const [shopOrders, setShopOrders]       = useState([]);
   const [loading, setLoading]             = useState(true);
@@ -167,7 +176,7 @@ const OrdersTab = ({ seller }) => {
     return shopMatch && statusMatch;
   });
 
-  const totalRevenue = filtered.reduce((s, o) => s + (o.shop?.subtotal || 0), 0);
+  const totalRevenue = filtered.reduce((s, o) => s + getNetShopAmount(o.shop), 0);
   const totalItems   = filtered.reduce((s, o) => s + (o.shop?.items || []).reduce((a, i) => a + i.quantity, 0), 0);
 
   if (loading) return (
@@ -295,6 +304,8 @@ const OrdersTab = ({ seller }) => {
                 const isNew        = newOrderIds.has(o.orderId);
                 const shopName     = o.shop?.shopName || o.shop?.name || '—';
                 const shopPhoto    = o.shop?.shopPhoto || o.shop?.photo || '';
+                const netAmount    = getNetShopAmount(o.shop);
+                const hasCoupon    = (o.shop?.couponDiscount || 0) > 0;
 
                 return (
                   <Fragment key={`${o.orderId}-${o.shop?.shopId}`}>
@@ -357,7 +368,10 @@ src={item.imageId}
                       </td>
 
                       <td className="px-5 py-4">
-                        <p className="font-black text-purple-700">₹{o.shop?.subtotal}</p>
+                        <p className="font-black text-purple-700">₹{netAmount}</p>
+                        {hasCoupon && (
+                          <p className="text-[9px] text-emerald-500 font-bold">−₹{o.shop.couponDiscount} ({o.shop.couponApplied})</p>
+                        )}
                         <p className="text-[10px] text-gray-400">{PAYMENT_LABELS[o.paymentMethod]}</p>
                       </td>
 
@@ -439,9 +453,16 @@ src={item.imageId}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Subtotal</p>
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                    {hasCoupon ? 'Net Amount (after coupon)' : 'Subtotal'}
+                                  </p>
                                   <p className="text-sm font-black text-purple-700 bg-white rounded-xl px-3 py-2 border border-purple-100">
-                                    ₹{o.shop?.subtotal}
+                                    ₹{netAmount}
+                                    {hasCoupon && (
+                                      <span className="text-[10px] text-gray-400 font-medium ml-1">
+                                        (₹{o.shop.subtotal} − ₹{o.shop.couponDiscount})
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                               </div>
