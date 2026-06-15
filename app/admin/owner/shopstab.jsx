@@ -41,7 +41,8 @@ function buildShopStats(allOrders = []) {
       const id = shop.shopId || shop.id || shop.shopName;
       if (!id) continue;
       if (!stats[id]) stats[id] = { revenue: 0, orders: 0, activeOrders: 0 };
-      stats[id].revenue += shop.subtotal || 0;
+      const discount = shop?.couponDiscount || 0;
+stats[id].revenue += Math.max((shop.subtotal || 0) - discount, 0);
       stats[id].orders += 1;
       const s = (order.status || "").toLowerCase();
       if (!["delivered", "cancelled", "rejected"].includes(s))
