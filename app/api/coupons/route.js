@@ -25,27 +25,58 @@ export async function POST(request) {
     if (!body.sellerPhone) return NextResponse.json({ error: 'sellerPhone required' }, { status: 400 });
     if (!body.code || !body.code.trim()) return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
 
-    const discountAmount = parseFloat(body.discountAmount);
-    const minCartValue = parseFloat(body.minCartValue) || 0;
-
-    if (!discountAmount || discountAmount <= 0) {
-      return NextResponse.json({ error: 'Invalid discount amount' }, { status: 400 });
-    }
-
     const code = body.code.trim().toUpperCase();
+    const minCartValue = parseFloat(body.minCartValue) || 0;
+    const type = body.type === 'product' ? 'product' : 'discount';
 
     const existing = await Coupon.findOne({ sellerPhone: body.sellerPhone, code });
     if (existing) {
       return NextResponse.json({ error: 'A coupon with this code already exists' }, { status: 409 });
     }
 
-    const newCoupon = await Coupon.create({
+    let couponData = {
       id: Date.now().toString(),
       sellerPhone: body.sellerPhone,
       code,
       minCartValue,
-      discountAmount,
-    });
+      type,
+    };
+
+    if (type === 'product') {
+      if (!body.productId) {
+        return NextResponse.json({ error: 'Product ID required for product reward' }, { status: 400 });
+      }
+      if (minCartValue <= 0) {
+        return NextResponse.json({ error: 'Minimum cart value required for product reward' }, { status: 400 });
+      }
+
+      const rewardType = body.rewardType === 'percent' ? 'percent' : 'free';
+      let rewardValue = 100;
+
+      if (rewardType === 'percent') {
+        rewardValue = parseFloat(body.rewardValue);
+        if (!rewardValue || rewardValue <= 0 || rewardValue > 100) {
+          return NextResponse.json({ error: 'Invalid reward percentage' }, { status: 400 });
+        }
+      }
+
+      couponData = {
+        ...couponData,
+        rewardType,
+        rewardValue,
+        productId: body.productId,
+        productName: body.productName || '',
+        productImage: body.productImage || '',
+      };
+    } else {
+      const discountAmount = parseFloat(body.discountAmount);
+      if (!discountAmount || discountAmount <= 0) {
+        return NextResponse.json({ error: 'Invalid discount amount' }, { status: 400 });
+      }
+      couponData.discountAmount = discountAmount;
+    }
+
+    const newCoupon = await Coupon.create(couponData);
 
     return NextResponse.json({ success: true, coupon: newCoupon });
   } catch (error) {

@@ -2,11 +2,20 @@ import { connectDB } from '../../lib/mongodb.js';
 import Product from '../../models/Product.js';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request) {
   try {
     await connectDB();
-    const products = await Product.find({}).lean();
-    return NextResponse.json({ products });
+    const sellerPhone = request.nextUrl.searchParams.get('sellerPhone');
+
+    const query = sellerPhone ? { sellerPhone } : {};
+    const products = await Product.find(query).lean();
+
+    const mapped = products.map((p) => ({
+      ...p,
+      image: p.mainImageId || (p.imageIds && p.imageIds[0]) || '',
+    }));
+
+    return NextResponse.json({ products: mapped });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read products' }, { status: 500 });
   }
