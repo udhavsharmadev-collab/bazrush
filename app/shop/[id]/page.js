@@ -207,23 +207,48 @@ const ShopPage = () => {
         {coupons.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pb-2 mb-4">
             {coupons.map((c) => (
-              <div
-                key={c.id}
-                className="flex-shrink-0 relative flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 min-w-[220px]"
-              >
-                <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
-                <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
-                  🎟️
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-violet-700 text-sm tracking-wide">{c.code}</p>
-                  <p className="text-[11px] text-gray-500 font-medium">
-                    ₹{c.discountAmount} off{c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''}
-                  </p>
-                </div>
-              </div>
-            ))}
+  <div
+    key={c.id}
+    className="flex-shrink-0 relative flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 min-w-[220px]"
+  >
+    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
+    <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border border-violet-100" />
+
+    {c.type === 'product' ? (
+      <>
+        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-violet-100 border border-violet-200">
+          <img
+            src={c.productImage}
+            alt={c.productName}
+            className="w-full h-full object-cover"
+            onError={(e) => { e.target.style.opacity = '0'; }}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-black text-violet-700 text-sm tracking-wide">{c.code}</p>
+          <p className="text-[11px] text-gray-500 font-medium truncate">
+            {c.rewardType === 'percent'
+              ? `${c.rewardValue}% off ${c.productName}`
+              : `${c.productName} FREE`}
+            {c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''}
+          </p>
+        </div>
+      </>
+    ) : (
+      <>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
+          🎟️
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-black text-violet-700 text-sm tracking-wide">{c.code}</p>
+          <p className="text-[11px] text-gray-500 font-medium">
+            ₹{c.discountAmount} off{c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''}
+          </p>
+        </div>
+      </>
+    )}
+  </div>
+))}
           </div>
         )}
 
