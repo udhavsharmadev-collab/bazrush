@@ -235,11 +235,7 @@ const CheckoutPage = () => {
   const couponDiscount = (() => {
   if (!appliedCoupon) return 0;
   if (appliedCoupon.type === 'product') {
-    if (appliedCoupon.rewardType === 'percent') {
-      const price = appliedCoupon.productPrice || 0;
-      return Math.round((price * (appliedCoupon.rewardValue || 0)) / 100);
-    }
-    return 0; // FREE product = no price deduction, product just gets added
+    return 0; // product coupons don't deduct — item is added at discounted/free price
   }
   return appliedCoupon.discountAmount || 0;
 })();
@@ -416,7 +412,9 @@ if (couponHere?.type === 'product' && couponHere.productId) {
     itemsList.push({
       key: `reward-${couponHere.productId}`,
       name: couponHere.productName,
-      price: couponHere.rewardType === 'percent' ? (couponHere.productPrice || 0) : 0,
+      price: couponHere.rewardType === 'percent'
+  ? Math.round((couponHere.productPrice || 0) * (1 - (couponHere.rewardValue || 0) / 100))
+  : 0,
       quantity: 1,
       selectedColor: null,
       selectedSize: null,
@@ -759,7 +757,7 @@ return {
                           {appliedCoupon.rewardType === 'percent' ? (
                             <>
                               <p className="text-sm font-black text-gray-400 line-through">₹{appliedCoupon.productPrice}</p>
-                              <p className="text-sm font-black text-emerald-600">₹{(appliedCoupon.productPrice || 0) - couponDiscount}</p>
+                              <p className="text-sm font-black text-emerald-600">₹{Math.round((appliedCoupon.productPrice || 0) * (1 - (appliedCoupon.rewardValue || 0) / 100))}</p>
                             </>
                           ) : (
                             <p className="text-sm font-black text-emerald-600">FREE</p>
