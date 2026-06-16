@@ -239,7 +239,15 @@ const CheckoutPage = () => {
   }
   return appliedCoupon.discountAmount || 0;
 })();
-  const grandTotal = Math.max(totalPrice + deliveryFee + PLATFORM_FEE - couponDiscount, 0);
+  const rewardItemPrice = (() => {
+  if (!appliedCoupon || appliedCoupon.type !== 'product') return 0;
+  if (appliedCoupon.rewardType === 'percent') {
+    return Math.round((appliedCoupon.productPrice || 0) * (1 - (appliedCoupon.rewardValue || 0) / 100));
+  }
+  return 0; // free = ₹0
+})();
+
+const grandTotal = Math.max(totalPrice + rewardItemPrice + deliveryFee + PLATFORM_FEE - couponDiscount, 0);
 
   // ── Form ──────────────────────────────────────────────────────────────────
   const [form, setForm]                   = useState({ name: '', phone: '', email: '', address: '' });
@@ -776,7 +784,7 @@ return {
             <div className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400 font-medium">Subtotal</span>
-                <span className="font-black text-gray-800">₹{totalPrice}</span>
+                <span className="font-black text-gray-800">₹{totalPrice + rewardItemPrice}</span>
               </div>
               <div className="flex justify-between text-sm items-center">
                 <span className="text-gray-400 font-medium">
