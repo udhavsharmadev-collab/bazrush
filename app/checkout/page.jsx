@@ -55,6 +55,14 @@ async function fetchCouponsBySellerPhone(sellerPhone) {
   } catch { return []; }
 }
 
+async function fetchProductById(productId) {
+  try {
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    return (data?.products || []).find(p => p.id === productId) || null;
+  } catch { return null; }
+}
+
 function groupByShop(cartItems) {
   const groups = {};
   for (const item of cartItems) {
@@ -224,7 +232,17 @@ const CheckoutPage = () => {
     return () => { cancelled = true; };
   }, [shopInfoMap]);
 
-  const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const couponDiscount = (() => {
+  if (!appliedCoupon) return 0;
+  if (appliedCoupon.type === 'product') {
+    const price = appliedCoupon.productPrice || 0;
+    if (appliedCoupon.rewardType === 'percent') {
+      return Math.round((price * (appliedCoupon.rewardValue || 0)) / 100);
+    }
+    return price; // free
+  }
+  return appliedCoupon.discountAmount || 0;
+})();
   const grandTotal = Math.max(totalPrice + deliveryFee + PLATFORM_FEE - couponDiscount, 0);
 
   // ── Form ──────────────────────────────────────────────────────────────────
@@ -304,7 +322,7 @@ const CheckoutPage = () => {
     coupons.map(c => ({ ...c, shopId, shopName: shopInfoMap[shopId]?.shopName || 'Shop' }))
   );
 
-  const applyCouponByCode = (code, shopIdHint) => {
+  const applyCouponByCode = async (code, shopIdHint) => {
     setCouponError('');
     const normalized = code.trim().toUpperCase();
     if (!normalized) {
@@ -336,14 +354,31 @@ const CheckoutPage = () => {
       return;
     }
 
+    let productPrice = null;
+    if (match.type === 'product' && match.productId) {
+      const cartItems_ = shopGroupsForCoupons[match.shopId] || [];
+      const inCart = cartItems_.find(i => i.product.id === match.productId);
+      if (inCart) {
+        productPrice = inCart.product.price;
+      } else {
+        const fetched = await fetchProductById(match.productId);
+        productPrice = fetched?.price ?? 0;
+      }
+    }
+
     setAppliedCoupon({
       shopId: match.shopId,
       code: match.code,
-      discountAmount: match.discountAmount,
+      type: match.type || 'discount',
+      discountAmount: match.discountAmount || 0,
       minCartValue: match.minCartValue || 0,
+      rewardType: match.rewardType,
+      rewardValue: match.rewardValue,
+      productId: match.productId,
+      productName: match.productName,
+      productImage: match.productImage,
+      productPrice,
     });
-    setCouponCode(match.code);
-    setCouponError('');
   };
 
   const handleRemoveCoupon = () => {
@@ -363,27 +398,56 @@ const CheckoutPage = () => {
       const s = shopInfoMap[shopId];
       const shopSubtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
       const couponHere = appliedCoupon && appliedCoupon.shopId === shopId ? appliedCoupon : null;
-      return {
-        shopId,
-        shopName:     s?.shopName    || 'Unknown Shop',
-        shopCategory: s?.category    || '',
-        shopPhoto:    s?.mainPhotoId || s?.shopPhoto || '',
-        shopAddress:  s?.address     || '',
-        items: items.map(item => ({
+     const itemsList = items.map(item => ({
   key:           item.key,
   name:          item.product.name,
   price:         item.product.price,
   quantity:      item.quantity,
   selectedColor: item.selectedColor,
   selectedSize:  item.selectedSize,
-  imageId: item.cartImageId ?? item.product.cartImageId ?? item.product.mainImageId,  // ← fixed
+  imageId: item.cartImageId ?? item.product.cartImageId ?? item.product.mainImageId,
   productId:     item.product.id,
-})),
-        subtotal: shopSubtotal,
-        couponApplied: couponHere ? couponHere.code : null,
-        couponDiscount: couponHere ? couponHere.discountAmount : 0,
-      };
+}));
+
+// If a product-reward coupon applies here and the reward item isn't already in the cart, add it
+if (couponHere?.type === 'product' && couponHere.productId) {
+  const alreadyInCart = items.some(i => i.product.id === couponHere.productId);
+  if (!alreadyInCart) {
+    itemsList.push({
+      key: `reward-${couponHere.productId}`,
+      name: couponHere.productName,
+      price: couponHere.rewardType === 'percent' ? (couponHere.productPrice || 0) : 0,
+      quantity: 1,
+      selectedColor: null,
+      selectedSize: null,
+      imageId: couponHere.productImage,
+      productId: couponHere.productId,
+      isReward: true,
+      rewardType: couponHere.rewardType,
     });
+  }
+}
+
+return {
+  shopId,
+  shopName:     s?.shopName    || 'Unknown Shop',
+  shopCategory: s?.category    || '',
+  shopPhoto:    s?.mainPhotoId || s?.shopPhoto || '',
+  shopAddress:  s?.address     || '',
+  items: itemsList,
+  subtotal: shopSubtotal,
+  couponApplied: couponHere ? couponHere.code : null,
+  couponType: couponHere?.type || null,
+  couponDiscount: couponHere ? couponDiscount : 0,
+  rewardProduct: couponHere?.type === 'product' ? {
+    productId: couponHere.productId,
+    name: couponHere.productName,
+    image: couponHere.productImage,
+    rewardType: couponHere.rewardType,
+    rewardValue: couponHere.rewardValue,
+  } : null,
+};
+});
 
     const flatItems = cartItems.map(item => ({
       productId: item.product.id,
@@ -545,10 +609,16 @@ const CheckoutPage = () => {
                   <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0">
                     <Check className="w-4 h-4 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-black text-emerald-700 tracking-wide truncate">{appliedCoupon.code}</p>
-                    <p className="text-[11px] text-emerald-500 font-semibold">₹{appliedCoupon.discountAmount} off applied</p>
-                  </div>
+                 <div className="min-w-0">
+  <p className="text-sm font-black text-emerald-700 tracking-wide truncate">{appliedCoupon.code}</p>
+  <p className="text-[11px] text-emerald-500 font-semibold">
+    {appliedCoupon.type === 'product'
+      ? (appliedCoupon.rewardType === 'percent'
+          ? `${appliedCoupon.rewardValue}% off ${appliedCoupon.productName}`
+          : `${appliedCoupon.productName} FREE`)
+      : `₹${appliedCoupon.discountAmount} off applied`}
+  </p>
+</div>
                 </div>
                 <button
                   onClick={handleRemoveCoupon}
@@ -585,23 +655,39 @@ const CheckoutPage = () => {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Available Coupons</p>
                     <div className="flex flex-col gap-2">
                       {allAvailableCoupons.map((c) => (
-                        <button
-                          key={`${c.shopId}-${c.code}`}
-                          onClick={() => applyCouponByCode(c.code, c.shopId)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 hover:border-violet-300 transition-all text-left"
-                        >
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
-                            🎟️
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black text-violet-700 tracking-wide">{c.code}</p>
-                            <p className="text-[11px] text-gray-500 font-medium truncate">
-                              ₹{c.discountAmount} off{c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''} · {c.shopName}
-                            </p>
-                          </div>
-                          <span className="text-[10px] font-black text-violet-500 flex-shrink-0">Tap to apply</span>
-                        </button>
-                      ))}
+  <button
+    key={`${c.shopId}-${c.code}`}
+    onClick={() => applyCouponByCode(c.code, c.shopId)}
+    className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 hover:border-violet-300 transition-all text-left"
+  >
+    {c.type === 'product' ? (
+      <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-violet-100 border border-violet-200">
+        <img
+          src={c.productImage}
+          alt={c.productName}
+          className="w-full h-full object-cover"
+          onError={(e) => { e.target.style.opacity = '0'; }}
+        />
+      </div>
+    ) : (
+      <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white text-base">
+        🎟️
+      </div>
+    )}
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-black text-violet-700 tracking-wide">{c.code}</p>
+      <p className="text-[11px] text-gray-500 font-medium truncate">
+        {c.type === 'product'
+          ? (c.rewardType === 'percent'
+              ? `${c.rewardValue}% off ${c.productName}`
+              : `${c.productName} FREE`)
+          : `₹${c.discountAmount} off`}
+        {c.minCartValue > 0 ? ` on orders above ₹${c.minCartValue}` : ''} · {c.shopName}
+      </p>
+    </div>
+    <span className="text-[10px] font-black text-violet-500 flex-shrink-0">Tap to apply</span>
+  </button>
+))}
                     </div>
                   </div>
                 )}
@@ -657,6 +743,31 @@ const CheckoutPage = () => {
                         </div>
                       </div>
                     ))}
+
+                    {appliedCoupon?.shopId === shopId && appliedCoupon.type === 'product' && appliedCoupon.productId && !items.some(i => i.product.id === appliedCoupon.productId) && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                          <img src={appliedCoupon.productImage} alt={appliedCoupon.productName} className="w-full h-full object-contain p-1" onError={e => { e.target.style.opacity = '0.2'; }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-black text-gray-900 capitalize truncate">{appliedCoupon.productName}</p>
+                          <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200 inline-block mt-0.5">
+                            {appliedCoupon.rewardType === 'percent' ? `${appliedCoupon.rewardValue}% OFF · Reward` : 'FREE · Reward'}
+                          </span>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          {appliedCoupon.rewardType === 'percent' ? (
+                            <>
+                              <p className="text-sm font-black text-gray-400 line-through">₹{appliedCoupon.productPrice}</p>
+                              <p className="text-sm font-black text-emerald-600">₹{(appliedCoupon.productPrice || 0) - couponDiscount}</p>
+                            </>
+                          ) : (
+                            <p className="text-sm font-black text-emerald-600">FREE</p>
+                          )}
+                          <p className="text-[10px] text-gray-400 font-semibold">×1</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -692,14 +803,15 @@ const CheckoutPage = () => {
                 <span className="text-gray-400 font-medium">Platform Fees</span>
                 <span className="font-black text-emerald-500">FREE</span>
               </div>
-              {appliedCoupon && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-emerald-500 font-bold flex items-center gap-1">
-                    <Tag className="w-3 h-3" /> Coupon ({appliedCoupon.code})
-                  </span>
-                  <span className="font-black text-emerald-500">−₹{appliedCoupon.discountAmount}</span>
-                </div>
-              )}
+             {appliedCoupon && (
+  <div className="flex justify-between text-sm">
+    <span className="text-emerald-500 font-bold flex items-center gap-1">
+      <Tag className="w-3 h-3" />
+      Coupon ({appliedCoupon.code}){appliedCoupon.type === 'product' ? ` · ${appliedCoupon.productName}` : ''}
+    </span>
+    <span className="font-black text-emerald-500">−₹{couponDiscount}</span>
+  </div>
+)}
               <div className="flex justify-between text-base pt-1 border-t border-gray-100 mt-1">
                 <span className="font-black text-gray-900">Total</span>
                 <span className="font-black bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent text-lg">₹{grandTotal}</span>
