@@ -235,11 +235,11 @@ const CheckoutPage = () => {
   const couponDiscount = (() => {
   if (!appliedCoupon) return 0;
   if (appliedCoupon.type === 'product') {
-    const price = appliedCoupon.productPrice || 0;
     if (appliedCoupon.rewardType === 'percent') {
+      const price = appliedCoupon.productPrice || 0;
       return Math.round((price * (appliedCoupon.rewardValue || 0)) / 100);
     }
-    return price; // free
+    return 0; // FREE product = no price deduction, product just gets added
   }
   return appliedCoupon.discountAmount || 0;
 })();
