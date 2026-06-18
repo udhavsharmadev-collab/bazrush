@@ -809,11 +809,11 @@ return {
                 <span className="text-gray-400 font-medium">Platform Fees</span>
                 <span className="font-black text-emerald-500">FREE</span>
               </div>
-             {appliedCoupon && (
+             {appliedCoupon && appliedCoupon.type !== 'product' && (
   <div className="flex justify-between text-sm">
     <span className="text-emerald-500 font-bold flex items-center gap-1">
       <Tag className="w-3 h-3" />
-      Coupon ({appliedCoupon.code}){appliedCoupon.type === 'product' ? ` · ${appliedCoupon.productName}` : ''}
+      Coupon ({appliedCoupon.code})
     </span>
     <span className="font-black text-emerald-500">−₹{couponDiscount}</span>
   </div>
