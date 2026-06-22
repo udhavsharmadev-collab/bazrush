@@ -231,7 +231,7 @@ const ReviewsTab = ({ seller }) => {
 
                       <div className="flex items-center gap-2 mt-2 mb-2">
                         <div className="w-6 h-6 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
-                          <img src={`/images/${isShop ? review.shopPhoto : review.productImage}`} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
+                          <img src={isShop ? review.shopPhoto : review.productImage} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0'; }} />
                         </div>
                         <p className="text-[11px] font-black text-gray-600 capitalize">
                           {isShop ? review.shopName : review.productName}
