@@ -106,19 +106,6 @@ const ShopPage = () => {
     });
   }, [inStockProducts, productSearch, selectedCategory]);
 
-  const isOpenNow = useMemo(() => {
-    if (!shop?.timing) return false;
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const today = days[new Date().getDay()];
-    const timing = shop.timing[today];
-    if (!timing || timing.closed) return false;
-    const now = new Date();
-    const [openH, openM] = timing.open.split(":").map(Number);
-    const [closeH, closeM] = timing.close.split(":").map(Number);
-    const nowMins = now.getHours() * 60 + now.getMinutes();
-    return nowMins >= openH * 60 + openM && nowMins < closeH * 60 + closeM;
-  }, [shop]);
-
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="text-center">
@@ -153,11 +140,11 @@ const ShopPage = () => {
         </button>
         <span className="text-gray-900 font-bold text-sm truncate flex-1 capitalize">{shop.shopName}</span>
         <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-          isOpenNow
+          shop.isOpen
             ? "bg-emerald-50 text-emerald-600 border-emerald-200"
             : "bg-rose-50 text-rose-500 border-rose-200"
         }`}>
-          {isOpenNow ? "● Open" : "● Closed"}
+          {shop.isOpen ? "● Open" : "● Closed"}
         </span>
       </div>
 
@@ -373,8 +360,8 @@ const ShopPage = () => {
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        onClick={() => isOpenNow && router.push(`/product/${product.id}`)}
-                        className={`group w-[calc(33.333%-8px)] ${isOpenNow ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
+                        onClick={() => router.push(`/product/${product.id}`)}
+                        className="cursor-pointer group w-[calc(33.333%-8px)]"
                       >
                         <div className="w-full aspect-square md:w-[200px] md:h-[200px] rounded-xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 relative mb-1">
                           <img

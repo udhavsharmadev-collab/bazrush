@@ -296,20 +296,6 @@ const LocationGate = ({ onAllowed }) => {
   );
 };
 
-// ─── Open status helper ────────────────────────────────────────────────────────
-function isOpenNow(shop) {
-  if (!shop?.timing) return false;
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const today = days[new Date().getDay()];
-  const timing = shop.timing[today];
-  if (!timing || timing.closed) return false;
-  const now = new Date();
-  const [openH, openM] = timing.open.split(":").map(Number);
-  const [closeH, closeM] = timing.close.split(":").map(Number);
-  const nowMins = now.getHours() * 60 + now.getMinutes();
-  return nowMins >= openH * 60 + openM && nowMins < closeH * 60 + closeM;
-}
-
 // ─── Product Card ──────────────────────────────────────────────────────────────
 const ProductCard = ({ product, onNavigate }) => (
   <div className="w-44 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
@@ -358,10 +344,10 @@ const ShopCard = ({ shop, rating, onNavigate }) => (
       <p className="text-[11px] text-gray-400 truncate mb-1.5">{shop.address}</p>
       <div className="flex items-center justify-between mb-2">
         <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-          isOpenNow(shop) ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
+          shop.isOpen ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
         }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isOpenNow(shop) ? "bg-emerald-500" : "bg-rose-400"}`} />
-          {isOpenNow(shop) ? "Open Now" : "Closed"}
+          <span className={`w-1.5 h-1.5 rounded-full ${shop.isOpen ? "bg-emerald-500" : "bg-rose-400"}`} />
+          {shop.isOpen ? "Open Now" : "Closed"}
         </span>
         {rating ? (
           <span className="inline-flex items-center gap-0.5 text-[11px] font-black text-amber-500">
