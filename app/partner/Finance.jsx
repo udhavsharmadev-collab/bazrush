@@ -75,11 +75,13 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
           settlementPending: true,
           settlementAmount: liveCodTotal,
           settlementRequestedAt: new Date().toISOString(),
+          lastSettledAt: new Date().toISOString(),
         }),
       });
       if (res.ok) {
         setPaidSuccess(true);
         setAlreadyPending(true);
+        setLiveCodTotal(0);
         onPartnerUpdate?.();
         setTimeout(() => setPaidSuccess(false), 3000);
       }
