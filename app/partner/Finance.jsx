@@ -54,7 +54,7 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
     const id = setInterval(() => loadCod(partner.lastSettledAt), 30_000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [partner.phoneNumber, partner.lastSettledAt]);
+  }, [partner.phoneNumber, partner.lastSettledAt, partner.settlementPending]);
 
   // Sync pending badge
   useEffect(() => {
