@@ -16,16 +16,15 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
   const [showUpiModal, setShowUpiModal]     = useState(false);
   const [paidLoading, setPaidLoading]       = useState(false);
   const [paidSuccess, setPaidSuccess]       = useState(false);
-  const [alreadyPending, setAlreadyPending] = useState(!!partner.settlementPending);
 
-  // ── COD loader — IDENTICAL logic to admin FinanceTab ─────────────────────
-  // Admin uses: skip if placedAt <= lastSettledAt
-  // We use the same here so both sides always show the same number
-  const loadCod = async (settledAt, isPending) => {
-    // ✅ If partner already notified admin, always show 0 — don't recalculate
-    if (isPending) {
+  // ── Single source of truth: DB field settlementPending ───────────────────
+  // isPending comes directly from DB via 8s poll in parent — no local state
+  const isPending = !!partner.settlementPending;
+
+  const loadCod = async () => {
+    // If partner already said I Paid → always 0, no recalculation ever
+    if (partner.settlementPending) {
       setLiveCodTotal(0);
-      setLiveCodLoading(false);
       return;
     }
     setLiveCodLoading(true);
@@ -34,14 +33,14 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
       const all = await res.json();
       if (!Array.isArray(all)) return;
 
-      const cutoff = settledAt ? new Date(settledAt) : null;
+      const cutoff = partner.lastSettledAt ? new Date(partner.lastSettledAt) : null;
 
       const total = all
         .filter(o => {
           if (o.assignedPartner !== partner.phoneNumber) return false;
           if (o.status !== "delivered") return false;
           if (!isCod(o.paymentMethod)) return false;
-          if (cutoff && o.placedAt && new Date(o.placedAt) <= cutoff) return false;
+          if (cutoff && o.deliveredAt && new Date(o.deliveredAt) <= cutoff) return false;
           return true;
         })
         .reduce((sum, o) => sum + (o.totalPrice ?? 0), 0);
@@ -51,54 +50,48 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
     finally { setLiveCodLoading(false); }
   };
 
-  // Re-run immediately when lastSettledAt changes (admin confirmed → parent
-  // 10s poll pushes fresh partner here → this fires → total resets to ₹0)
+  // Fires on every partner update from 8s poll
   useEffect(() => {
-    loadCod(partner.lastSettledAt, partner.settlementPending);
-
-    const id = setInterval(() => loadCod(partner.lastSettledAt, partner.settlementPending), 30_000);
+    loadCod();
+    const id = setInterval(loadCod, 30_000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partner.phoneNumber, partner.lastSettledAt, partner.settlementPending]);
 
-  useEffect(() => {
-    setAlreadyPending(!!partner.settlementPending);
-    if (!partner.settlementPending && partner.lastSettledAt) {
-      setPaidSuccess(false);
-    }
-  }, [partner.settlementPending, partner.lastSettledAt]);
-
   const handleIPaid = async () => {
     if (liveCodTotal === 0) return;
     setPaidLoading(true);
+    const amount = liveCodTotal;
+    // Instantly lock UI before API call
+    setLiveCodTotal(0);
     try {
-      const res = await fetch("/api/delivery-partners", {
+      await fetch("/api/delivery-partners", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phoneNumber: partner.phoneNumber,
-          settlementPending: true,
-          settlementAmount: liveCodTotal,
+          phoneNumber:           partner.phoneNumber,
+          settlementPending:     true,
+          settlementAmount:      amount,
           settlementRequestedAt: new Date().toISOString(),
-          lastSettledAt: new Date().toISOString(),
         }),
       });
-      if (res.ok) {
-        setPaidSuccess(true);
-        setAlreadyPending(true);
-        setLiveCodTotal(0);
-        onPartnerUpdate?.();
-        setTimeout(() => setPaidSuccess(false), 3000);
-      }
+      setPaidSuccess(true);
+      onPartnerUpdate?.();
+      setTimeout(() => setPaidSuccess(false), 3000);
     } catch {}
     finally { setPaidLoading(false); }
   };
 
   const adminUpiId = partner.adminUpiId || "admin@upi";
 
+  // Display amount — if pending always 0, driven by DB not local state
+  const displayAmount = isPending ? 0 : liveCodTotal;
+  const showButtons   = !isPending && displayAmount > 0;
+
   return (
     <>
       <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm space-y-3">
+
         {/* Cash Collected row */}
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-lg flex-shrink-0">
@@ -108,23 +101,31 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cash Collected</p>
             {liveCodLoading
               ? <div className="h-4 w-14 bg-gray-100 rounded animate-pulse mt-0.5" />
-              : <p className="text-base font-black text-amber-600">{fmtRupee(liveCodTotal)}</p>
+              : <p className="text-base font-black text-amber-600">{fmtRupee(displayAmount)}</p>
             }
           </div>
-          {alreadyPending && (
+          {isPending && (
             <span className="text-[10px] font-black text-orange-500 bg-orange-50 border border-orange-200 px-2 py-1 rounded-lg">
               ⏳ Pending
             </span>
           )}
-          {!alreadyPending && liveCodTotal === 0 && partner.lastSettledAt && (
+          {!isPending && displayAmount === 0 && partner.lastSettledAt && (
             <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg">
               ✅ Settled
             </span>
           )}
         </div>
 
-        {/* Action buttons — only show if there's cash to deposit */}
-        {liveCodTotal > 0 && (
+        {/* Pending notice */}
+        {isPending && (
+          <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+            <span className="text-base">⏳</span>
+            <p className="text-xs font-black text-orange-600">Payment notified — waiting for admin confirmation</p>
+          </div>
+        )}
+
+        {/* Action buttons — only when not pending and has cash */}
+        {showButtons && (
           <div className="flex gap-2 pt-1">
             <button
               type="button"
@@ -133,23 +134,21 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
             >
               📲 Deposit via UPI
             </button>
-
             <button
               type="button"
               onClick={handleIPaid}
-              disabled={paidLoading || alreadyPending}
+              disabled={paidLoading}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all border ${
                 paidSuccess
                   ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                  : alreadyPending
-                  ? "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
                   : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
               }`}
             >
-              {paidLoading ? "⏳ Sending..." : paidSuccess ? "✅ Notified!" : alreadyPending ? "✅ Notified" : "✅ I Paid!"}
+              {paidLoading ? "⏳ Sending..." : paidSuccess ? "✅ Notified!" : "✅ I Paid!"}
             </button>
           </div>
         )}
+
       </div>
 
       {/* UPI Modal */}
@@ -167,7 +166,7 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
                 📲
               </div>
               <h3 className="text-lg font-black text-gray-900 mt-3">Deposit Cash</h3>
-              <p className="text-sm text-gray-400">Send {fmtRupee(liveCodTotal)} to admin UPI</p>
+              <p className="text-sm text-gray-400">Send {fmtRupee(displayAmount)} to admin UPI</p>
             </div>
 
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center space-y-2">
@@ -186,7 +185,7 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
               <span className="text-2xl">💵</span>
               <div>
                 <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Amount to Send</p>
-                <p className="text-2xl font-black text-amber-600">{fmtRupee(liveCodTotal)}</p>
+                <p className="text-2xl font-black text-amber-600">{fmtRupee(displayAmount)}</p>
               </div>
             </div>
 
