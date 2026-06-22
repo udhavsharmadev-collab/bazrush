@@ -21,7 +21,13 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
   // ── COD loader — IDENTICAL logic to admin FinanceTab ─────────────────────
   // Admin uses: skip if placedAt <= lastSettledAt
   // We use the same here so both sides always show the same number
-  const loadCod = async (settledAt) => {
+  const loadCod = async (settledAt, isPending) => {
+    // ✅ If partner already notified admin, always show 0 — don't recalculate
+    if (isPending) {
+      setLiveCodTotal(0);
+      setLiveCodLoading(false);
+      return;
+    }
     setLiveCodLoading(true);
     try {
       const res = await fetch("/api/orders?all=true");
@@ -35,7 +41,6 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
           if (o.assignedPartner !== partner.phoneNumber) return false;
           if (o.status !== "delivered") return false;
           if (!isCod(o.paymentMethod)) return false;
-          // ✅ Same as admin: use placedAt vs lastSettledAt
           if (cutoff && o.placedAt && new Date(o.placedAt) <= cutoff) return false;
           return true;
         })
@@ -49,9 +54,9 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
   // Re-run immediately when lastSettledAt changes (admin confirmed → parent
   // 10s poll pushes fresh partner here → this fires → total resets to ₹0)
   useEffect(() => {
-    loadCod(partner.lastSettledAt);
+    loadCod(partner.lastSettledAt, partner.settlementPending);
 
-    const id = setInterval(() => loadCod(partner.lastSettledAt), 30_000);
+    const id = setInterval(() => loadCod(partner.lastSettledAt, partner.settlementPending), 30_000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partner.phoneNumber, partner.lastSettledAt, partner.settlementPending]);
