@@ -16,7 +16,7 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
   const [showUpiModal, setShowUpiModal]     = useState(false);
   const [paidLoading, setPaidLoading]       = useState(false);
   const [paidSuccess, setPaidSuccess]       = useState(false);
-  const [alreadyPending, setAlreadyPending] = useState(false);
+  const [alreadyPending, setAlreadyPending] = useState(!!partner.settlementPending);
 
   // ── COD loader — IDENTICAL logic to admin FinanceTab ─────────────────────
   // Admin uses: skip if placedAt <= lastSettledAt
@@ -56,10 +56,12 @@ export default function FinancePanel({ partner, onPartnerUpdate }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partner.phoneNumber, partner.lastSettledAt, partner.settlementPending]);
 
-  // Sync pending badge
   useEffect(() => {
     setAlreadyPending(!!partner.settlementPending);
-  }, [partner.settlementPending]);
+    if (!partner.settlementPending && partner.lastSettledAt) {
+      setPaidSuccess(false);
+    }
+  }, [partner.settlementPending, partner.lastSettledAt]);
 
   const handleIPaid = async () => {
     if (liveCodTotal === 0) return;
