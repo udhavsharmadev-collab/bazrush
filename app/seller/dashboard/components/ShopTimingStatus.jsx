@@ -1,6 +1,19 @@
 "use client";
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const parseTime = (str) => { if (!str) return null; const s = str.trim(); const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i); if (m12) { let h = parseInt(m12[1]); const m = parseInt(m12[2]); if (m12[3].toUpperCase() === 'AM' && h === 12) h = 0; if (m12[3].toUpperCase() === 'PM' && h !== 12) h += 12; return h * 60 + m; } const m24 = s.match(/^(\d{1,2}):(\d{2})$/); if (m24) return parseInt(m24[1]) * 60 + parseInt(m24[2]); return null; };
+const isShopOpenNow = (timing) => { if (!timing) return false; const day = DAYS[new Date().getDay()]; const t = timing[day]; if (!t || t.closed) return false; const o = parseTime(t.open), c = parseTime(t.close); if (o === null || c === null) return false; const now = new Date().getHours() * 60 + new Date().getMinutes(); return c < o ? now >= o || now < c : now >= o && now < c; };
+
+import { useEffect } from 'react';
+
 const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onShopStatusToggle }) => {
+  useEffect(() => {
+    const autoStatus = isShopOpenNow(shopData.timing);
+    if (autoStatus !== shopData.isOpen) {
+      onShopStatusToggle();
+    }
+  }, []);
+
   return (
     <>
       {/* Shop Timing Section */}
