@@ -372,10 +372,16 @@ export function OrderCard({ order, partner, onAccept, onOutForDelivery, onDelive
             </button>
           )}
           {isOutForDelivery && (
-            <button onClick={() => wrap(handleDeliver)} disabled={busy || otpInput.length < 4}
-              className="flex-1 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
-              {busy ? "..." : "🎉 Mark Delivered"}
-            </button>
+            <>
+              <a href={`tel:${order.customerPhone}`}
+                className="px-4 py-3.5 bg-green-50 hover:bg-green-100 text-green-600 font-black text-sm rounded-2xl border border-green-200 hover:border-green-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1">
+                📞 Call
+              </a>
+              <button onClick={() => wrap(handleDeliver)} disabled={busy || otpInput.length < 4}
+                className="flex-1 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
+                {busy ? "..." : "🎉 Mark Delivered"}
+              </button>
+            </>
           )}
         </div>
       </div>

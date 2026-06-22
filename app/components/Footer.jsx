@@ -85,7 +85,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/track" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 flex items-center space-x-2 group">
+                <Link href="/orders" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 flex items-center space-x-2 group">
                   <span className="w-1 h-1 bg-purple-600 rounded-full group-hover:scale-150 transition-transform" />
                   <span>Track Order</span>
                 </Link>
