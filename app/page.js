@@ -177,7 +177,7 @@ const LocationGate = ({ onAllowed }) => {
     if (!inputVal.trim()) return;
     checkCity(inputVal);
   };
-  const { isSellerAuthenticated } = useSeller();
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center px-4">
@@ -381,6 +381,7 @@ const Page = () => {
   const [shops, setShops] = useState([]);
   const [shopRatings, setShopRatings] = useState({});
   const router = useRouter();
+  const { isSellerAuthenticated } = useSeller();
 
   const handleNavigate = useCallback((path) => {
     router.push(path);
