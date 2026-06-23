@@ -340,11 +340,7 @@ const ShopTab = ({ seller }) => {
 
     // Always save immediately — don't wait for Update Shop button
     try {
-      const freshRes = await fetch(`/api/sellers?phoneNumber=${encodeURIComponent(seller.phoneNumber)}`);
-      const freshData = await freshRes.json();
-      const freshShops = freshData?.seller?.shops || savedShops;
-
-      const updatedShops = freshShops.map(shop =>
+      const updatedShops = savedShops.map(shop =>
         shop.id === editingShopId ? {
           ...shop,
           ...shopData,
@@ -361,7 +357,7 @@ const ShopTab = ({ seller }) => {
         body: JSON.stringify({ phoneNumber: seller.phoneNumber, shops: updatedShops }),
       });
 
-      await loadSavedShops();
+      setSavedShops(updatedShops);
     } catch (err) {
       console.error('Override save failed:', err);
     }
