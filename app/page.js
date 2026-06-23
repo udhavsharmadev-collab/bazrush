@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSeller } from './context/SellerContext';
-const { isSellerAuthenticated } = useSeller();
+
 
 
 // ─── Cookie helpers ────────────────────────────────────────────────────────────
@@ -177,6 +177,7 @@ const LocationGate = ({ onAllowed }) => {
     if (!inputVal.trim()) return;
     checkCity(inputVal);
   };
+  const { isSellerAuthenticated } = useSeller();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center px-4">
