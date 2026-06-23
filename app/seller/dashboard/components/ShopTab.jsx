@@ -334,41 +334,48 @@ const ShopTab = ({ seller }) => {
     const now = new Date();
     const isOverrideActive = shopData.overrideUntil && now < new Date(shopData.overrideUntil);
 
-    let newOverrideUntil = null;
-    let newOverrideStatus = null;
+    const newOverrideUntil = isOverrideActive
+      ? null
+      : new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    const newOverrideStatus = isOverrideActive
+      ? null
+      : !isShopOpenNow(shopData.timing, null, null);
+    const newIsOpen = isShopOpenNow(shopData.timing, newOverrideUntil, newOverrideStatus);
 
-    if (!isOverrideActive) {
-      newOverrideUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-      newOverrideStatus = !isShopOpenNow(shopData.timing, null, null);
-    }
-
-    const updatedShopData = {
-      ...shopData,
+    // Update local state immediately
+    setShopData(prev => ({
+      ...prev,
       overrideUntil: newOverrideUntil,
       overrideStatus: newOverrideStatus,
-      isOpen: isShopOpenNow(shopData.timing, newOverrideUntil, newOverrideStatus),
-    };
+      isOpen: newIsOpen,
+    }));
 
-    setShopData(updatedShopData);
+    // Always save immediately — don't wait for Update Shop button
+    try {
+      const freshRes = await fetch(`/api/sellers?phoneNumber=${encodeURIComponent(seller.phoneNumber)}`);
+      const freshData = await freshRes.json();
+      const freshShops = freshData?.seller?.shops || savedShops;
 
-    // Auto-save override immediately so it persists
-    if (editingShopId) {
-      const updatedShops = savedShops.map(shop =>
+      const updatedShops = freshShops.map(shop =>
         shop.id === editingShopId ? {
           ...shop,
-          ...updatedShopData,
+          ...shopData,
           overrideUntil: newOverrideUntil,
           overrideStatus: newOverrideStatus,
-          isOpen: isShopOpenNow(shopData.timing, newOverrideUntil, newOverrideStatus),
+          isOpen: newIsOpen,
           updatedAt: new Date().toISOString(),
         } : shop
       );
+
       await fetch('/api/sellers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: seller.phoneNumber, shops: updatedShops }),
       });
-      loadSavedShops();
+
+      await loadSavedShops();
+    } catch (err) {
+      console.error('Override save failed:', err);
     }
   };
 
