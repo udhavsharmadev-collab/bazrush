@@ -7,15 +7,7 @@ const isShopOpenNow = (timing, overrideUntil, overrideStatus) => { if (overrideU
 import { useEffect } from 'react';
 
 const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onShopStatusToggle, onOverrideToggle }) => {
-  useEffect(() => {
-    const isOverrideActive = shopData.overrideUntil && new Date() < new Date(shopData.overrideUntil);
-    if (!isOverrideActive) {
-      const autoStatus = isShopOpenNow(shopData.timing, null, null);
-      if (autoStatus !== shopData.isOpen) {
-        onShopStatusToggle();
-      }
-    }
-  }, []);
+  
 
   return (
     <>
@@ -96,8 +88,8 @@ const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onSh
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
                 <div>
                   <p className="font-semibold text-gray-900 text-base sm:text-lg">Shop is Currently</p>
-                  <p className={`text-xl sm:text-2xl font-black mt-1 ${shopData.isOpen ? 'text-green-600' : 'text-red-600'}`}>
-                    {shopData.isOpen ? '🟢 Open' : '🔴 Closed'}
+                  <p className={`text-xl sm:text-2xl font-black mt-1 ${isShopOpenNow(shopData.timing, shopData.overrideUntil, shopData.overrideStatus) ? 'text-green-600' : 'text-red-600'}`}>
+                    {isShopOpenNow(shopData.timing, shopData.overrideUntil, shopData.overrideStatus) ? '🟢 Open' : '🔴 Closed'}
                   </p>
                   {isOverrideActive && (
                     <p className="text-xs text-orange-600 font-medium mt-1">

@@ -330,15 +330,45 @@ const ShopTab = ({ seller }) => {
     setMessage('');
   };
 
-  const handleOverrideToggle = () => {
+  const handleOverrideToggle = async () => {
     const now = new Date();
     const isOverrideActive = shopData.overrideUntil && now < new Date(shopData.overrideUntil);
-    if (isOverrideActive) {
-      setShopData(prev => ({ ...prev, overrideUntil: null, overrideStatus: null }));
-    } else {
-      const overrideUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-      const currentlyOpen = isShopOpenNow(shopData.timing, null, null);
-      setShopData(prev => ({ ...prev, overrideUntil, overrideStatus: !currentlyOpen }));
+
+    let newOverrideUntil = null;
+    let newOverrideStatus = null;
+
+    if (!isOverrideActive) {
+      newOverrideUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      newOverrideStatus = !isShopOpenNow(shopData.timing, null, null);
+    }
+
+    const updatedShopData = {
+      ...shopData,
+      overrideUntil: newOverrideUntil,
+      overrideStatus: newOverrideStatus,
+      isOpen: isShopOpenNow(shopData.timing, newOverrideUntil, newOverrideStatus),
+    };
+
+    setShopData(updatedShopData);
+
+    // Auto-save override immediately so it persists
+    if (editingShopId) {
+      const updatedShops = savedShops.map(shop =>
+        shop.id === editingShopId ? {
+          ...shop,
+          ...updatedShopData,
+          overrideUntil: newOverrideUntil,
+          overrideStatus: newOverrideStatus,
+          isOpen: isShopOpenNow(shopData.timing, newOverrideUntil, newOverrideStatus),
+          updatedAt: new Date().toISOString(),
+        } : shop
+      );
+      await fetch('/api/sellers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: seller.phoneNumber, shops: updatedShops }),
+      });
+      loadSavedShops();
     }
   };
 
