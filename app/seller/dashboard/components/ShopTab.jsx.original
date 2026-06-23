@@ -280,8 +280,11 @@ const ShopTab = ({ seller }) => {
     }
   };
 
-  const handleEditShop = (shop) => {
-    setShopData(shop);
+  const handleEditShop = async (shop) => {
+    const res = await fetch(`/api/sellers?phoneNumber=${encodeURIComponent(seller?.phoneNumber)}`);
+    const data = await res.json();
+    const freshShop = data?.seller?.shops?.find(s => s.id === shop.id) || shop;
+    setShopData(freshShop);
     setPreviewPhotos({
       mainPhoto: shop.mainPhotoId ? `/images/${shop.mainPhotoId}` : null,
       photos: (shop.photoIds || []).slice(0, 4).map(id => id ? `/images/${id}` : null).concat(Array(4 - Math.max(0, (shop.photoIds || []).length)).fill(null)),
