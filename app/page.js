@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSeller } from './context/SellerContext';
+const { isSellerAuthenticated } = useSeller();
+
 
 // ─── Cookie helpers ────────────────────────────────────────────────────────────
 function setCookie(name, value, days = 30) {
@@ -556,8 +558,7 @@ const Page = () => {
           </div>
         )}
       </section>
-      const { isSellerAuthenticated } = useSeller();
-
+      
       {!isSellerAuthenticated && (
       <section className="px-5 py-8">
         <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 rounded-3xl p-8 lg:p-12 shadow-2xl border border-purple-500/50 overflow-hidden relative">
