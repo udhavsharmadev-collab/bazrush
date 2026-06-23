@@ -30,26 +30,20 @@ const parseTime = (str) => {
 };
 
 // Returns true if the shop is currently open based on its timing object
-const isShopOpenNow = (timing) => {
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => {
+  if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) {
+    return overrideStatus ?? true;
+  }
   if (!timing) return false;
-
   const now = new Date();
   const dayName = DAYS[now.getDay()];
   const todayTiming = timing[dayName];
-
   if (!todayTiming || todayTiming.closed) return false;
-
-  const openMins  = parseTime(todayTiming.open);
+  const openMins = parseTime(todayTiming.open);
   const closeMins = parseTime(todayTiming.close);
   if (openMins === null || closeMins === null) return false;
-
   const nowMins = now.getHours() * 60 + now.getMinutes();
-
-  // Handle overnight shifts (e.g. open 22:00 – 02:00)
-  if (closeMins < openMins) {
-    return nowMins >= openMins || nowMins < closeMins;
-  }
-
+  if (closeMins < openMins) return nowMins >= openMins || nowMins < closeMins;
   return nowMins >= openMins && nowMins < closeMins;
 };
 
@@ -81,7 +75,7 @@ const SellersShopList = ({ seller, onSelectShop, onEditShop }) => {
 
       {/* View Modal Overlay */}
       {viewingShop && (() => {
-        const open = isShopOpenNow(viewingShop.timing);
+        const open = isShopOpenNow(viewingShop.timing, viewingShop.overrideUntil, viewingShop.overrideStatus);
         return (
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -221,7 +215,7 @@ const SellersShopList = ({ seller, onSelectShop, onEditShop }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {shops.map((shop) => {
-            const open = isShopOpenNow(shop.timing);
+            const open = isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus);
             return (
               <div
                 key={shop.id}
