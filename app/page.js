@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useSeller } from '../context/SellerContext';
+import { useSeller } from './context/SellerContext';
 
 // ─── Cookie helpers ────────────────────────────────────────────────────────────
 function setCookie(name, value, days = 30) {
