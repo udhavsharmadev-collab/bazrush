@@ -243,6 +243,7 @@ const ShopTab = ({ seller }) => {
         mainPhotoFile.current = null;
         photosFiles.current = [null, null, null, null];
         setPreviewPhotos({ mainPhoto: null, photos: [null, null, null, null] });
+        setSelectedShop(null);
         setViewMode('shops');
         loadSavedShops();
         router.refresh();
@@ -268,6 +269,8 @@ const ShopTab = ({ seller }) => {
         mainPhotoId: '',
         photoIds: ['', '', '', ''],
         isOpen: true,
+        overrideUntil: null,
+        overrideStatus: null,
         timing: {
           Monday: { open: '09:00', close: '21:00', closed: false },
           Tuesday: { open: '09:00', close: '21:00', closed: false },
@@ -379,9 +382,22 @@ const ShopTab = ({ seller }) => {
               {selectedShop.shopName}
             </h3>
             <p className="text-xl text-gray-600">{selectedShop.address}</p>
-            <p className={`text-2xl font-black mt-2 ${selectedShop.isOpen ? 'text-green-600' : 'text-red-600'}`}>
-              {selectedShop.isOpen ? '🟢 Open' : '🔴 Closed'}
-            </p>
+            {(() => {
+              const liveOpen = isShopOpenNow(selectedShop.timing, selectedShop.overrideUntil, selectedShop.overrideStatus);
+              const isOverrideActive = selectedShop.overrideUntil && new Date() < new Date(selectedShop.overrideUntil);
+              return (
+                <>
+                  <p className={`text-2xl font-black mt-2 ${liveOpen ? 'text-green-600' : 'text-red-600'}`}>
+                    {liveOpen ? '🟢 Open' : '🔴 Closed'}
+                  </p>
+                  {isOverrideActive && (
+                    <p className="text-xs text-orange-500 font-medium mt-1">
+                      ⚡ Override active until {new Date(selectedShop.overrideUntil).toLocaleString()}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <button
             onClick={() => handleEditShop(selectedShop)}
