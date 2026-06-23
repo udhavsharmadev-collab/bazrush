@@ -2,15 +2,18 @@
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const parseTime = (str) => { if (!str) return null; const s = str.trim(); const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i); if (m12) { let h = parseInt(m12[1]); const m = parseInt(m12[2]); if (m12[3].toUpperCase() === 'AM' && h === 12) h = 0; if (m12[3].toUpperCase() === 'PM' && h !== 12) h += 12; return h * 60 + m; } const m24 = s.match(/^(\d{1,2}):(\d{2})$/); if (m24) return parseInt(m24[1]) * 60 + parseInt(m24[2]); return null; };
-const isShopOpenNow = (timing) => { if (!timing) return false; const day = DAYS[new Date().getDay()]; const t = timing[day]; if (!t || t.closed) return false; const o = parseTime(t.open), c = parseTime(t.close); if (o === null || c === null) return false; const now = new Date().getHours() * 60 + new Date().getMinutes(); return c < o ? now >= o || now < c : now >= o && now < c; };
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => { if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) { return overrideStatus ?? true; } if (!timing) return false; const day = DAYS[new Date().getDay()]; const t = timing[day]; if (!t || t.closed) return false; const o = parseTime(t.open), c = parseTime(t.close); if (o === null || c === null) return false; const now = new Date().getHours() * 60 + new Date().getMinutes(); return c < o ? now >= o || now < c : now >= o && now < c; };
 
 import { useEffect } from 'react';
 
-const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onShopStatusToggle }) => {
+const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onShopStatusToggle, onOverrideToggle }) => {
   useEffect(() => {
-    const autoStatus = isShopOpenNow(shopData.timing);
-    if (autoStatus !== shopData.isOpen) {
-      onShopStatusToggle();
+    const isOverrideActive = shopData.overrideUntil && new Date() < new Date(shopData.overrideUntil);
+    if (!isOverrideActive) {
+      const autoStatus = isShopOpenNow(shopData.timing, null, null);
+      if (autoStatus !== shopData.isOpen) {
+        onShopStatusToggle();
+      }
     }
   }, []);
 
@@ -82,25 +85,53 @@ const ShopTimingStatus = ({ shopData, days, onTimingChange, onClosedToggle, onSh
           Shop Status
         </h3>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-          <div>
-            <p className="font-semibold text-gray-900 text-base sm:text-lg">Shop is Currently</p>
-            <p className={`text-xl sm:text-2xl font-black mt-1 ${shopData.isOpen ? 'text-green-600' : 'text-red-600'}`}>
-              {shopData.isOpen ? '🟢 Open' : '🔴 Closed'}
-            </p>
-          </div>
+        {(() => {
+          const isOverrideActive = shopData.overrideUntil && new Date() < new Date(shopData.overrideUntil);
+          const overrideEndsAt = isOverrideActive ? new Date(shopData.overrideUntil).toLocaleString() : null;
+          const scheduledOpen = isShopOpenNow(shopData.timing, null, null);
 
-          <button
-            onClick={onShopStatusToggle}
-            className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-lg font-bold transition shadow-lg text-sm sm:text-base ${
-              shopData.isOpen
-                ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
-                : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white'
-            }`}
-          >
-            {shopData.isOpen ? '🔴 Close Shop' : '🟢 Open Shop'}
-          </button>
-        </div>
+          return (
+            <div className="space-y-4">
+              {/* Current status display */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                <div>
+                  <p className="font-semibold text-gray-900 text-base sm:text-lg">Shop is Currently</p>
+                  <p className={`text-xl sm:text-2xl font-black mt-1 ${shopData.isOpen ? 'text-green-600' : 'text-red-600'}`}>
+                    {shopData.isOpen ? '🟢 Open' : '🔴 Closed'}
+                  </p>
+                  {isOverrideActive && (
+                    <p className="text-xs text-orange-600 font-medium mt-1">
+                      ⚡ Override active — ignoring schedule until {overrideEndsAt}
+                    </p>
+                  )}
+                  {!isOverrideActive && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      📅 Following schedule
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Override button */}
+              <button
+                onClick={onOverrideToggle}
+                className={`w-full px-6 py-3 rounded-xl font-bold text-white transition shadow-lg text-sm sm:text-base ${
+                  isOverrideActive
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
+                    : scheduledOpen
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                }`}
+              >
+                {isOverrideActive
+                  ? `🔄 Cancel Override (resets ${overrideEndsAt})`
+                  : scheduledOpen
+                    ? '🔴 Force Close for 24hrs (override schedule)'
+                    : '🟢 Force Open for 24hrs (override schedule)'}
+              </button>
+            </div>
+          );
+        })()}
       </div>
     </>
   );
