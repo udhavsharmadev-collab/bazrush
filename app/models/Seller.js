@@ -13,6 +13,8 @@ const ShopSchema = new mongoose.Schema({
   mainPhotoId: String,
   photoIds: [String],
   isOpen: { type: Boolean, default: true },
+  overrideUntil: { type: String, default: null },
+  overrideStatus: { type: Boolean, default: null },
   timing: {
     Monday: TimingDaySchema, Tuesday: TimingDaySchema, Wednesday: TimingDaySchema,
     Thursday: TimingDaySchema, Friday: TimingDaySchema, Saturday: TimingDaySchema, Sunday: TimingDaySchema,

@@ -122,6 +122,8 @@ export async function PUT(request) {
         shopId:  s.shopId  || s.id     || Date.now().toString(),
         shopName: s.shopName || s.name || '',
         name:     s.name    || s.shopName || '',
+        overrideUntil:  s.overrideUntil  ?? null,
+        overrideStatus: s.overrideStatus ?? null,
       }));
     }
 
