@@ -555,6 +555,34 @@ const Page = () => {
           </div>
         )}
       </section>
+
+      {/* Become a Seller Banner */}
+      <section className="px-5 py-8">
+        <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 rounded-3xl p-8 lg:p-12 shadow-2xl border border-purple-500/50 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-white flex-1">
+              <div className="flex items-center space-x-3 mb-4">
+                <span className="text-4xl animate-pulse">&#9889;</span>
+                <h3 className="text-3xl lg:text-4xl font-black">Join Bazrush Sellers</h3>
+              </div>
+              <p className="text-purple-100 text-lg leading-relaxed">
+                Start your business with lightning-fast delivery. Reach thousands of customers in minutes.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/seller/login')}
+              className="group relative px-8 py-4 lg:py-5 lg:px-10 bg-white text-purple-700 font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl whitespace-nowrap overflow-hidden cursor-pointer"
+            >
+              <span className="relative z-10 flex items-center space-x-2">
+                <span>Become a Seller</span>
+                <span className="group-hover:translate-x-1 transition-transform duration-300">&#8594;</span>
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
