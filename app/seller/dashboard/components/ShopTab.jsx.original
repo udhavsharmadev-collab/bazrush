@@ -54,6 +54,28 @@ const ShopTab = ({ seller }) => {
     }
   }, [seller?.phoneNumber, viewMode]);
 
+  const prevIsOpenRef = useRef(null);
+
+  useEffect(() => {
+    if (!isEditing || !editingShopId) return;
+
+    const check = () => {
+      const currentIsOpen = isShopOpenNow(shopData.timing, shopData.overrideUntil, shopData.overrideStatus);
+      if (prevIsOpenRef.current === null) {
+        prevIsOpenRef.current = currentIsOpen;
+        return;
+      }
+      if (prevIsOpenRef.current !== currentIsOpen) {
+        prevIsOpenRef.current = currentIsOpen;
+        handleSaveShop();
+      }
+    };
+
+    check();
+    const interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, [isEditing, editingShopId, shopData.timing, shopData.overrideUntil, shopData.overrideStatus]);
+
   const loadSavedShops = async () => {
     try {
       const response = await fetch(`/api/sellers?phoneNumber=${encodeURIComponent(seller?.phoneNumber)}`);
