@@ -3,6 +3,42 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const parseTime = (str) => {
+  if (!str) return null;
+  const s = str.trim();
+  const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = parseInt(match12[2], 10);
+    const period = match12[3].toUpperCase();
+    if (period === 'AM' && h === 12) h = 0;
+    if (period === 'PM' && h !== 12) h += 12;
+    return h * 60 + m;
+  }
+  const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) return parseInt(match24[1], 10) * 60 + parseInt(match24[2], 10);
+  return null;
+};
+
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => {
+  if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) {
+    return overrideStatus ?? true;
+  }
+  if (!timing) return false;
+  const now = new Date();
+  const dayName = DAYS[now.getDay()];
+  const todayTiming = timing[dayName];
+  if (!todayTiming || todayTiming.closed) return false;
+  const openMins = parseTime(todayTiming.open);
+  const closeMins = parseTime(todayTiming.close);
+  if (openMins === null || closeMins === null) return false;
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  if (closeMins < openMins) return nowMins >= openMins || nowMins < closeMins;
+  return nowMins >= openMins && nowMins < closeMins;
+};
+
 const ShopPage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -126,6 +162,7 @@ const ShopPage = () => {
   );
 
   const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  const isOpen = isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus);
 
   return (
     <div className="min-h-screen bg-white pb-10">
@@ -140,11 +177,11 @@ const ShopPage = () => {
         </button>
         <span className="text-gray-900 font-bold text-sm truncate flex-1 capitalize">{shop.shopName}</span>
         <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-          shop.isOpen
+          isOpen
             ? "bg-emerald-50 text-emerald-600 border-emerald-200"
             : "bg-rose-50 text-rose-500 border-rose-200"
         }`}>
-          {shop.isOpen ? "● Open" : "● Closed"}
+          {isOpen ? "● Open" : "● Closed"}
         </span>
       </div>
 

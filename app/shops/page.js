@@ -78,7 +78,7 @@ const ShopsPage = () => {
         shop.address?.toLowerCase().includes(q);
       const matchCategory =
         activeFilter === "All" || shop.category === activeFilter;
-      const matchOpen = !showOpenOnly || shop.isOpen;
+      const matchOpen = !showOpenOnly || isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus);
       return matchSearch && matchCategory && matchOpen;
     });
   }, [shops, search, activeFilter, showOpenOnly]);
@@ -200,6 +200,7 @@ const ShopsPage = () => {
           <div className="grid grid-cols-2 gap-3">
             {filtered.map((shop) => {
               const rating = shopRatings[shop.id];
+              const open = isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus);
               return (
                 <div
                   key={shop.id}
@@ -217,17 +218,17 @@ const ShopsPage = () => {
                     {/* Open/Closed badge */}
                     <span
                       className={`absolute top-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                        shop.isOpen
+                        open
                           ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                           : "bg-rose-50 text-rose-500 border-rose-200"
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          shop.isOpen ? "bg-emerald-500" : "bg-rose-400"
+                          open ? "bg-emerald-500" : "bg-rose-400"
                         }`}
                       />
-                      {shop.isOpen ? "Open" : "Closed"}
+                      {open ? "Open" : "Closed"}
                     </span>
 
                     {/* Rating badge */}

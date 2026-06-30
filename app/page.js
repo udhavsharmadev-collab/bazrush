@@ -332,6 +332,42 @@ const ProductCard = ({ product, onNavigate }) => (
 );
 
 // ─── Shop Card ─────────────────────────────────────────────────────────────────
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const parseTime = (str) => {
+  if (!str) return null;
+  const s = str.trim();
+  const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = parseInt(match12[2], 10);
+    const period = match12[3].toUpperCase();
+    if (period === 'AM' && h === 12) h = 0;
+    if (period === 'PM' && h !== 12) h += 12;
+    return h * 60 + m;
+  }
+  const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) return parseInt(match24[1], 10) * 60 + parseInt(match24[2], 10);
+  return null;
+};
+
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => {
+  if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) {
+    return overrideStatus ?? true;
+  }
+  if (!timing) return false;
+  const now = new Date();
+  const dayName = DAYS[now.getDay()];
+  const todayTiming = timing[dayName];
+  if (!todayTiming || todayTiming.closed) return false;
+  const openMins = parseTime(todayTiming.open);
+  const closeMins = parseTime(todayTiming.close);
+  if (openMins === null || closeMins === null) return false;
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  if (closeMins < openMins) return nowMins >= openMins || nowMins < closeMins;
+  return nowMins >= openMins && nowMins < closeMins;
+};
+
 const ShopCard = ({ shop, rating, onNavigate }) => (
   <div className="w-52 flex-shrink-0 bg-white rounded-2xl border border-purple-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
     <div className="h-28 bg-gradient-to-br from-violet-50 to-fuchsia-50 flex items-center justify-center overflow-hidden">
@@ -347,12 +383,14 @@ const ShopCard = ({ shop, rating, onNavigate }) => (
       <p className="text-[11px] text-purple-500 font-semibold mb-0.5">{shop.category}</p>
       <p className="text-[11px] text-gray-400 truncate mb-1.5">{shop.address}</p>
       <div className="flex items-center justify-between mb-2">
+        {(() => { const open = isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus); return (
         <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-          shop.isOpen ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
+          open ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
         }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${shop.isOpen ? "bg-emerald-500" : "bg-rose-400"}`} />
-          {shop.isOpen ? "Open Now" : "Closed"}
+          <span className={`w-1.5 h-1.5 rounded-full ${open ? "bg-emerald-500" : "bg-rose-400"}`} />
+          {open ? "Open Now" : "Closed"}
         </span>
+        ); })()}
         {rating ? (
           <span className="inline-flex items-center gap-0.5 text-[11px] font-black text-amber-500">
             ⭐ {rating.avg}
