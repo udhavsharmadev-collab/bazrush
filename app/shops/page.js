@@ -3,6 +3,43 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+// ─── Open/Closed helpers (same logic as homepage) ──────────────────────────
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const parseTime = (str) => {
+  if (!str) return null;
+  const s = str.trim();
+  const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = parseInt(match12[2], 10);
+    const period = match12[3].toUpperCase();
+    if (period === 'AM' && h === 12) h = 0;
+    if (period === 'PM' && h !== 12) h += 12;
+    return h * 60 + m;
+  }
+  const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) return parseInt(match24[1], 10) * 60 + parseInt(match24[2], 10);
+  return null;
+};
+
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => {
+  if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) {
+    return overrideStatus ?? true;
+  }
+  if (!timing) return false;
+  const now = new Date();
+  const dayName = DAYS[now.getDay()];
+  const todayTiming = timing[dayName];
+  if (!todayTiming || todayTiming.closed) return false;
+  const openMins = parseTime(todayTiming.open);
+  const closeMins = parseTime(todayTiming.close);
+  if (openMins === null || closeMins === null) return false;
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  if (closeMins < openMins) return nowMins >= openMins || nowMins < closeMins;
+  return nowMins >= openMins && nowMins < closeMins;
+};
+
 const ShopsPage = () => {
   const router = useRouter();
   const [shops, setShops] = useState([]);
