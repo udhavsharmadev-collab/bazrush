@@ -7,6 +7,42 @@ import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/Wishlistcontext";
 import { Star, Heart, Check } from "lucide-react";
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const parseTime = (str) => {
+  if (!str) return null;
+  const s = str.trim();
+  const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = parseInt(match12[2], 10);
+    const period = match12[3].toUpperCase();
+    if (period === 'AM' && h === 12) h = 0;
+    if (period === 'PM' && h !== 12) h += 12;
+    return h * 60 + m;
+  }
+  const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) return parseInt(match24[1], 10) * 60 + parseInt(match24[2], 10);
+  return null;
+};
+
+const isShopOpenNow = (timing, overrideUntil, overrideStatus) => {
+  if (overrideUntil && new Date().getTime() < new Date(overrideUntil).getTime()) {
+    return overrideStatus ?? true;
+  }
+  if (!timing) return false;
+  const now = new Date();
+  const dayName = DAYS[now.getDay()];
+  const todayTiming = timing[dayName];
+  if (!todayTiming || todayTiming.closed) return false;
+  const openMins = parseTime(todayTiming.open);
+  const closeMins = parseTime(todayTiming.close);
+  if (openMins === null || closeMins === null) return false;
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  if (closeMins < openMins) return nowMins >= openMins || nowMins < closeMins;
+  return nowMins >= openMins && nowMins < closeMins;
+};
+
 
 const StarDisplay = ({ rating, size = 'sm' }) => (
   <div className="flex gap-0.5">
@@ -154,7 +190,7 @@ if (found) {
   // Cart always gets whatever is big
   const cartImageId = bigImageId;
 
-  const shopClosed = shop ? !shop.isOpen : false;
+  const shopClosed = shop ? !isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus) : false;
 
   const cartKey = product
     ? `${product.id}-${selectedColor || 'default'}-${selectedSize || 'default'}`
@@ -462,9 +498,9 @@ if (found) {
       </div>
       <div className="flex flex-col items-end gap-1.5">
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-          shop.isOpen ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-500 border border-rose-200'
+          isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus) ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-500 border border-rose-200'
         }`}>
-          {shop.isOpen ? '● Open' : '● Closed'}
+          {isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus) ? '● Open' : '● Closed'}
         </span>
         <span className="text-violet-400 text-xs font-bold group-hover:translate-x-0.5 transition-transform">Visit →</span>
       </div>
