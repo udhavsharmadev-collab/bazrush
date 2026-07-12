@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, Clock, ShoppingBag, ChevronDown, ChevronUp, Store, Star } from 'lucide-react';
+import { MapPin, Clock, ShoppingBag, ChevronDown, ChevronUp, Store, Star } 
+from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 const STATUS_CONFIG = {
   confirmed:        { label: 'Confirmed',       emoji: '✅', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', bar: 1 },
@@ -257,6 +261,44 @@ const OrderCard = ({ order, userPhone, userName, reviewedKeys, onReviewSubmitted
   };
   const etaStatic = ETA_STATIC[order.status];
 
+  const handleDownloadInvoice = async () => {
+  const url = `/api/orders/${order.id}/invoice?phone=${encodeURIComponent(userPhone)}`;
+
+  if (!Capacitor.isNativePlatform()) {
+    window.open(url, '_blank');
+    return;
+  }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch invoice');
+    const blob = await res.blob();
+
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const fileName = `invoice-${order.id}.pdf`;
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+
+    await Share.share({
+      title: 'Invoice',
+      url: savedFile.uri,
+      dialogTitle: 'Save or share your invoice',
+    });
+  } catch (err) {
+    console.error('Invoice download failed', err);
+    alert('Could not download invoice. Please try again.');
+  }
+};
+
   return (
     <>
       {reviewModal && (
@@ -425,7 +467,14 @@ src={item.imageId} alt="" className="w-full h-full object-contain p-1" onError={
                 </div>
               </div>
 
-              {isDelivered && (<a href={`/api/orders/${order.id}/invoice?phone=${encodeURIComponent(userPhone)}`} download className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gray-900 text-white font-black text-sm hover:bg-gray-800 transition-all">📄 Download Invoice</a>)}
+              {isDelivered && (
+  <button
+    onClick={handleDownloadInvoice}
+    className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gray-900 text-white font-black text-sm hover:bg-gray-800 transition-all"
+  >
+    📄 Download Invoice
+  </button>
+)}
 
               {isDelivered && (
                 <div>
