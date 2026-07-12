@@ -425,15 +425,7 @@ src={item.imageId} alt="" className="w-full h-full object-contain p-1" onError={
                 </div>
               </div>
 
-              {isDelivered && (
-                
-                  href={`/api/orders/${order.id}/invoice?phone=${encodeURIComponent(userPhone)}`}
-                  download
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gray-900 text-white font-black text-sm hover:bg-gray-800 transition-all"
-                >
-                  📄 Download Invoice
-                </a>
-              )}
+              {isDelivered && (<a href={`/api/orders/${order.id}/invoice?phone=${encodeURIComponent(userPhone)}`} download className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gray-900 text-white font-black text-sm hover:bg-gray-800 transition-all">📄 Download Invoice</a>)}
 
               {isDelivered && (
                 <div>
