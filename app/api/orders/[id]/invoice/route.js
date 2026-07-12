@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     if (!phone) {
       return Response.json({ error: 'phone is required' }, { status: 400 });

@@ -20,7 +20,7 @@ export function generateInvoicePDF(order) {
     doc.moveDown(1.5);
 
     (order.shops || []).forEach((shop) => {
-      doc.font("Helvetica-Bold").fontSize(11).text(`🏪 ${shop.shopName || shop.name || "Shop"}`);
+      doc.font("Helvetica-Bold").fontSize(11).text(shop.shopName || shop.name || "Shop");
       doc.moveDown(0.3);
 
       const top = doc.y;
@@ -37,13 +37,13 @@ export function generateInvoicePDF(order) {
       (shop.items || []).forEach((item) => {
         doc.fontSize(9).text(item.name, 50, y, { width: 240 });
         doc.text(String(item.quantity), 300, y);
-        doc.text(`₹${item.price}`, 370, y);
-        doc.text(`₹${item.price * item.quantity}`, 460, y);
+        doc.text(`Rs.${item.price}`, 370, y);
+        doc.text(`Rs.${item.price * item.quantity}`, 460, y);
         y += 18;
       });
 
       doc.y = y;
-      doc.font("Helvetica-Bold").fontSize(9).text(`Shop Subtotal: ₹${shop.subtotal}`, 370, y + 4);
+      doc.font("Helvetica-Bold").fontSize(9).text(`Shop Subtotal: Rs.${shop.subtotal}`, 370, y + 4);
       doc.moveDown(2);
     });
 
@@ -51,9 +51,9 @@ export function generateInvoicePDF(order) {
     doc.moveDown(0.5);
 
     doc.font("Helvetica").fontSize(10);
-    doc.text(`Delivery Fee: ${order.deliveryFee ? "₹" + order.deliveryFee : "FREE"}`, { align: "right" });
+    doc.text(`Delivery Fee: ${order.deliveryFee ? "Rs." + order.deliveryFee : "FREE"}`, { align: "right" });
     doc.font("Helvetica-Bold").fontSize(13);
-    doc.text(`Total Paid: ₹${order.totalPrice}`, { align: "right" });
+    doc.text(`Total Paid: Rs.${order.totalPrice}`, { align: "right" });
     doc.fontSize(9).font("Helvetica").text(`Payment: ${order.paymentMethod?.toUpperCase() || "N/A"}`, { align: "right" });
 
     doc.moveDown(3);
