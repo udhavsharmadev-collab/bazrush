@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { connectDB } from '../../../lib/mongodb.js';
-import User from '../../../models/User.js';
+import { connectDB } from '../../../../lib/mongodb.js';
+import User from '../../../../models/User.js';
 import { generateInvoicePDF } from '../../../../lib/generateInvoice.js';
 
 export async function GET(request, { params }) {
