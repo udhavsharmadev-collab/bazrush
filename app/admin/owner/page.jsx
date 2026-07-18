@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import OverviewTab, { Spinner } from "./owneroverviewtab";
 import { ShopsTab, PartnersTab, SellersTab } from "./ownertabs";
 import FinanceTab from "./financepage";
+import WithdrawalsTab from "./withdrawalspage";
 import ClassyOwnerAuth from "./classyauth";
 
 const APIS = {
@@ -65,6 +66,7 @@ export default function ClassyOwnerPanel() {
     { id: "partners", label: "Partners",  emoji: "🛵" },
     { id: "sellers",  label: "Sellers",   emoji: "👨‍💼" },
     { id: "finance",  label: "Finance",   emoji: "💰" },
+    { id: "withdrawals", label: "Withdrawals", emoji: "💸" },
   ];
 
   // ── Show auth gate until all 3 steps pass ──────────────────────────────
@@ -131,6 +133,7 @@ export default function ClassyOwnerPanel() {
             {tab === "partners" && <PartnersTab data={data} />}
             {tab === "sellers"  && <SellersTab  data={data} />}
             {tab === "finance"  && <FinanceTab  />}
+            {tab === "withdrawals" && <WithdrawalsTab />}
           </>
         )}
       </div>
