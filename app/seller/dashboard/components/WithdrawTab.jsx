@@ -11,7 +11,7 @@ function getNetShopAmount(shop) {
 }
 
 const WithdrawTab = ({ seller }) => {
-  const { requestWithdraw } = useSeller();
+  const { requestWithdraw, cancelWithdraw } = useSeller();
   const sellerPhone = seller?.phoneNumber;
 
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -33,6 +33,23 @@ const WithdrawTab = ({ seller }) => {
   });
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [cancelingId, setCancelingId] = useState(null);
+
+  const handleCancel = async (id) => {
+    if (!confirm('Cancel this withdrawal request?')) return;
+    setCancelingId(id);
+    try {
+      const result = await cancelWithdraw(id);
+      if (result.success) {
+        fetchRequests();
+        loadRevenue();
+      } else {
+        alert(result.error);
+      }
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   const loadRevenue = useCallback(async () => {
     if (!sellerPhone) return;
@@ -301,6 +318,9 @@ const WithdrawTab = ({ seller }) => {
             className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold shadow-lg shadow-purple-200 hover:opacity-90 transition disabled:opacity-50">
             {submitting ? 'Submitting...' : 'Request Withdrawal'}
           </button>
+          <p className="text-xs text-gray-400 text-center">
+            Withdrawal requests are processed within 5–7 working days
+          </p>
         </form>
       </div>
 
@@ -321,9 +341,20 @@ const WithdrawTab = ({ seller }) => {
                       {r.paymentMode === 'upi' ? r.upiId : r.bankDetails?.bankName} · {new Date(r.createdAt).toLocaleDateString('en-IN')}
                     </p>
                   </div>
-                  <span className={`text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 ${color}`}>
-                    <Icon className="w-3.5 h-3.5" /> {r.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 ${color}`}>
+                      <Icon className="w-3.5 h-3.5" /> {r.status}
+                    </span>
+                    {r.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancel(r._id)}
+                        disabled={cancelingId === r._id}
+                        className="text-xs px-3 py-1.5 rounded-full font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition disabled:opacity-50"
+                      >
+                        {cancelingId === r._id ? '...' : 'Cancel'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

@@ -82,3 +82,30 @@ export async function PATCH(request) {
     return Response.json({ error: 'Failed to update withdrawal request' }, { status: 500 });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    await connectDB();
+    const { id, phoneNumber } = await request.json();
+
+    if (!id || !phoneNumber) return Response.json({ error: 'id and phoneNumber required' }, { status: 400 });
+
+    const seller = await Seller.findOne({ phoneNumber });
+    if (!seller) return Response.json({ error: 'Seller not found' }, { status: 404 });
+
+    const reqDoc = await WithdrawRequest.findById(id);
+    if (!reqDoc) return Response.json({ error: 'Request not found' }, { status: 404 });
+    if (String(reqDoc.seller) !== String(seller._id)) {
+      return Response.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    if (reqDoc.status !== 'pending') {
+      return Response.json({ error: 'Only pending requests can be cancelled' }, { status: 400 });
+    }
+
+    await WithdrawRequest.findByIdAndDelete(id);
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error('DELETE withdraw error:', error);
+    return Response.json({ error: 'Failed to cancel withdrawal request' }, { status: 500 });
+  }
+}
