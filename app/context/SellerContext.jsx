@@ -140,10 +140,30 @@ export const SellerProvider = ({ children }) => {
     }
   };
 
+  const requestWithdraw = async (withdrawData) => {
+    if (!seller) return { success: false, error: 'No seller found' };
+    try {
+      const res = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...withdrawData, phoneNumber: seller.phoneNumber }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Withdrawal request failed');
+      }
+      const data = await res.json();
+      return { success: true, data: data.request };
+    } catch (error) {
+      console.error('Withdraw request error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   return (
     <SellerContext.Provider value={{
       seller, isSellerAuthenticated, loading,
-      registerSeller, loginSeller, logoutSeller, updateSellerProfile,
+      registerSeller, loginSeller, logoutSeller, updateSellerProfile, requestWithdraw,
     }}>
       {children}
     </SellerContext.Provider>

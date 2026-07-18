@@ -1,0 +1,54 @@
+import { connectDB } from '../../lib/mongodb.js';
+import Seller from '../../models/Seller.js';
+import WithdrawRequest from '../../models/WithdrawRequest.js';
+
+export async function POST(request) {
+  try {
+    await connectDB();
+    const body = await request.json();
+    const { phoneNumber, name, phone, address, paymentMode, upiId, bankDetails, amount } = body;
+
+    if (!phoneNumber) return Response.json({ error: 'Phone number required' }, { status: 400 });
+
+    const seller = await Seller.findOne({ phoneNumber });
+    if (!seller) return Response.json({ error: 'Seller not found' }, { status: 404 });
+
+    if (!name || !phone || !address || !paymentMode || !amount) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    if (paymentMode === 'upi' && !upiId) {
+      return Response.json({ error: 'UPI ID is required' }, { status: 400 });
+    }
+    if (paymentMode === 'bank' && (!bankDetails?.accountNumber || !bankDetails?.ifsc || !bankDetails?.accountHolderName)) {
+      return Response.json({ error: 'Bank details incomplete' }, { status: 400 });
+    }
+
+    const withdrawRequest = await WithdrawRequest.create({
+      seller: seller._id, name, phone, address, paymentMode, upiId, bankDetails, amount,
+    });
+
+    return Response.json({ success: true, message: 'Withdrawal request submitted', request: withdrawRequest });
+  } catch (error) {
+    console.error('POST withdraw error:', error);
+    return Response.json({ error: 'Failed to submit withdrawal request' }, { status: 500 });
+  }
+}
+
+export async function GET(request) {
+  try {
+    await connectDB();
+    const url = new URL(request.url);
+    const phoneNumber = url.searchParams.get('phoneNumber');
+
+    if (!phoneNumber) return Response.json({ error: 'Phone number required' }, { status: 400 });
+
+    const seller = await Seller.findOne({ phoneNumber });
+    if (!seller) return Response.json({ error: 'Seller not found' }, { status: 404 });
+
+    const requests = await WithdrawRequest.find({ seller: seller._id }).sort({ createdAt: -1 }).lean();
+    return Response.json({ requests });
+  } catch (error) {
+    console.error('GET withdraw error:', error);
+    return Response.json({ error: 'Failed to fetch withdrawal requests' }, { status: 500 });
+  }
+}
