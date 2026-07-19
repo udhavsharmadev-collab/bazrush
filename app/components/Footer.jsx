@@ -40,7 +40,7 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-gray-600 leading-relaxed max-w-md">
-              Delivering your essentials in 60-90 minutes. Experience futuristic speed with bold energy.
+              Delivering your essentials in 250-300 minutes. Experience futuristic speed with bold energy.
             </p>
           </div>
 

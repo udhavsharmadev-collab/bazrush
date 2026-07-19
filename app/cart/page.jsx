@@ -166,7 +166,7 @@ const CartPage = () => {
         <div className="mx-4 mt-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
           <p className="text-emerald-700 text-[11px] font-bold flex-1">
-            Delivery open · 60–90 min ⚡
+            Delivery open · 250-300 min ⚡
           </p>
           <span className="text-[10px] text-emerald-500 font-semibold">until 7:00 PM</span>
         </div>
