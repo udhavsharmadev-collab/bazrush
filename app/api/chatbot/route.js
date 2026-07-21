@@ -1,6 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
 
 // Keep this in sync with the FAQ list in ChatbotWidget.jsx and your real
 // delivery/payment/policy details — this is what grounds the AI's answers.
@@ -20,7 +19,7 @@ Rules:
 - Keep answers short — 1 to 3 sentences, friendly and plain-spoken.
 - Only answer questions about Bazrush, shopping, orders, delivery, or the platform. If asked something unrelated (general trivia, coding help, etc.), politely redirect to Bazrush topics.
 - Never invent policies, prices, or timelines you don't have — if unsure, say so and point to support@bazrush.com.
-- Do not mention that you are Claude or made by Anthropic; you are Bazrush's assistant.`;
+- Do not mention Gemini, Google, or any underlying AI provider; you are Bazrush's assistant.`;
 
 export async function POST(req) {
   try {
@@ -30,23 +29,46 @@ export async function POST(req) {
       return Response.json({ reply: "Sorry, I didn't catch that — could you rephrase?" }, { status: 400 });
     }
 
+    if (!GEMINI_API_KEY) {
+      console.error("Missing GEMINI_API_KEY env var");
+      return Response.json(
+        { reply: "I'm having trouble replying right now — please try again later or email support@bazrush.com." },
+        { status: 500 }
+      );
+    }
+
     // Keep only the last few turns so the request stays small and fast.
     const priorTurns = (Array.isArray(history) ? history : [])
       .slice(-8)
       .map((m) => ({
-        role: m.from === "user" ? "user" : "assistant",
-        content: m.text,
+        role: m.from === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
       }));
 
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      system: SYSTEM_PROMPT,
-      messages: [...priorTurns, { role: "user", content: message }],
+    const body = {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [...priorTurns, { role: "user", parts: [{ text: message }] }],
+      generationConfig: { maxOutputTokens: 200, temperature: 0.4 },
+    };
+
+    const res = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
 
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Gemini API error:", res.status, errText);
+      return Response.json(
+        { reply: "I'm having trouble replying right now — please try again in a bit or email support@bazrush.com." },
+        { status: 500 }
+      );
+    }
+
+    const data = await res.json();
     const reply =
-      response.content?.find((block) => block.type === "text")?.text?.trim() ||
+      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
       "Sorry, I couldn't work that out — try support@bazrush.com.";
 
     return Response.json({ reply });
