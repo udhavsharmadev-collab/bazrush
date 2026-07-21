@@ -54,20 +54,37 @@ const Bubble = ({ from, text }) => (
   </div>
 );
 
+// ─── Typing indicator ───────────────────────────────────────────────────────
+const TypingBubble = () => (
+  <div className="flex justify-start mb-2.5">
+    <div className="bg-purple-50 border border-purple-100 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-1.5 h-1.5 rounded-full bg-purple-300 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s` }}
+        />
+      ))}
+    </div>
+  </div>
+);
+
 // ─── Widget ────────────────────────────────────────────────────────────────
 const ChatbotWidget = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { from: "bot", text: "Hey! 👋 I'm Bazi, your Bazrush assistant. Pick a question below, or ask me anything." },
+    { from: "bot", text: "Hey! 👋 I'm Bazi, your Bazrush assistant. Pick a question below, or type anything else you're wondering about." },
   ]);
   const [showChips, setShowChips] = useState(true);
+  const [inputVal, setInputVal] = useState("");
+  const [thinking, setThinking] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, open]);
+  }, [messages, open, thinking]);
 
   const askFaq = (faq) => {
     setMessages((prev) => [...prev, { from: "user", text: faq.q }, { from: "bot", text: faq.a }]);
@@ -76,6 +93,35 @@ const ChatbotWidget = () => {
   };
 
   const resetChips = () => setShowChips(true);
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    const text = inputVal.trim();
+    if (!text || thinking) return;
+
+    const nextMessages = [...messages, { from: "user", text }];
+    setMessages(nextMessages);
+    setInputVal("");
+    setShowChips(false);
+    setThinking(true);
+
+    try {
+      const res = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: nextMessages.slice(0, -1) }),
+      });
+      const data = await res.json();
+      setMessages((prev) => [...prev, { from: "bot", text: data.reply || "Sorry, something went wrong." }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { from: "bot", text: "I'm having trouble replying right now — please try again or email support@bazrush.com." },
+      ]);
+    } finally {
+      setThinking(false);
+    }
+  };
 
   return (
     <>
@@ -112,9 +158,10 @@ const ChatbotWidget = () => {
             {messages.map((m, i) => (
               <Bubble key={i} from={m.from} text={m.text} />
             ))}
+            {thinking && <TypingBubble />}
 
             {/* FAQ chips */}
-            {showChips && (
+            {showChips && !thinking && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {FAQS.map((faq) => (
                   <button
@@ -129,8 +176,27 @@ const ChatbotWidget = () => {
             )}
           </div>
 
+          {/* Text input */}
+          <form onSubmit={sendMessage} className="px-3.5 pt-3 flex gap-2 border-t border-purple-100">
+            <input
+              type="text"
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              placeholder="Type your question…"
+              disabled={thinking}
+              className="flex-1 border border-purple-200 rounded-xl px-3.5 py-2 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={thinking || !inputVal.trim()}
+              className="bg-gradient-to-r from-violet-600 to-purple-500 text-white font-semibold text-[13px] px-4 py-2 rounded-xl hover:opacity-90 transition-opacity duration-150 disabled:opacity-40 cursor-pointer"
+            >
+              Send
+            </button>
+          </form>
+
           {/* Footer */}
-          <div className="px-3.5 py-3 border-t border-purple-100 bg-purple-50/50">
+          <div className="px-3.5 py-3">
             <button
               onClick={resetChips}
               className="w-full text-center text-[12px] font-semibold text-violet-600 bg-white border border-purple-200 py-2 rounded-xl hover:bg-violet-600 hover:text-white transition-all duration-150 cursor-pointer"
