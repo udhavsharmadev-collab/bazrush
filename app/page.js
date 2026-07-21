@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSeller } from './context/SellerContext';
+import ChatbotWidget from './components/ChatbotWidget';
 
 
 
@@ -599,7 +600,7 @@ const Page = () => {
         )}
       </section>
       
-      {!isSellerAuthenticated && (
+    {!isSellerAuthenticated && (
       <section className="px-5 py-8">
         <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 rounded-3xl p-8 lg:p-12 shadow-2xl border border-purple-500/50 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
@@ -627,6 +628,7 @@ const Page = () => {
         </div>
       </section>
       )}
+      <ChatbotWidget />
     </div>
   );
 };
