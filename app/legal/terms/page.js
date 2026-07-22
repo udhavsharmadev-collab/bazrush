@@ -140,13 +140,13 @@ const TermsPage = () => {
             <span>Governing Law</span>
           </h2>
           <p className="text-purple-100 leading-relaxed">
-            Governed by laws of India. Disputes in courts of Delhi. Contact support@bazrush.com for questions.
+            Governed by laws of India. Disputes in courts of Delhi. Contact supportbazrush@gmail.com for questions.
           </p>
         </section>
 
         {/* Contact */}
         <div className="text-center pt-12 border-t border-white/20">
-          <p className="text-purple-300 mb-6">Questions? Email us at <a href="mailto:support@bazrush.com" className="font-semibold underline hover:text-purple-200">support@bazrush.com</a></p>
+          <p className="text-purple-300 mb-6">Questions? Email us at <a href="mailto:supportbazrush@gmail.com" className="font-semibold underline hover:text-purple-200">supportbazrush@gmail.com</a></p>
           <Link href="/" className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all">
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Home</span>

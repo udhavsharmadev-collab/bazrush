@@ -13,12 +13,12 @@ Facts about Bazrush you can rely on:
 - Coupons can be applied at checkout via the coupon strip near the order summary.
 - To become a seller, use the "Become a Seller" button on the homepage and sign up for a seller dashboard.
 - For damaged/wrong items, contact support within 24 hours of delivery for a replacement or refund.
-- For anything you can't resolve, direct the person to support@bazrush.com.
+- For anything you can't resolve, direct the person to supportbazrush@gmail.com.
 
 Rules:
 - Keep answers short — 1 to 3 sentences, friendly and plain-spoken.
 - Only answer questions about Bazrush, shopping, orders, delivery, or the platform. If asked something unrelated (general trivia, coding help, etc.), politely redirect to Bazrush topics.
-- Never invent policies, prices, or timelines you don't have — if unsure, say so and point to support@bazrush.com.
+- Never invent policies, prices, or timelines you don't have — if unsure, say so and point to supportbazrush@gmail.com.
 - Do not mention Gemini, Google, or any underlying AI provider; you are Bazrush's assistant.`;
 
 export async function POST(req) {
@@ -32,7 +32,7 @@ export async function POST(req) {
     if (!GEMINI_API_KEY) {
       console.error("Missing GEMINI_API_KEY env var");
       return Response.json(
-        { reply: "I'm having trouble replying right now — please try again later or email support@bazrush.com." },
+        { reply: "I'm having trouble replying right now — please try again later or email supportbazrush@gmail.com." },
         { status: 500 }
       );
     }
@@ -61,7 +61,7 @@ export async function POST(req) {
       const errText = await res.text();
       console.error("Gemini API error:", res.status, errText);
       return Response.json(
-        { reply: "I'm having trouble replying right now — please try again in a bit or email support@bazrush.com." },
+        { reply: "I'm having trouble replying right now — please try again in a bit or email supportbazrush@gmail.com." },
         { status: 500 }
       );
     }
@@ -69,13 +69,13 @@ export async function POST(req) {
     const data = await res.json();
     const reply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
-      "Sorry, I couldn't work that out — try support@bazrush.com.";
+      "Sorry, I couldn't work that out — try supportbazrush@gmail.com.";
 
     return Response.json({ reply });
   } catch (err) {
     console.error("Chatbot API error:", err);
     return Response.json(
-      { reply: "I'm having trouble replying right now — please try again in a bit or email support@bazrush.com." },
+      { reply: "I'm having trouble replying right now — please try again in a bit or email supportbazrush@gmail.com." },
       { status: 500 }
     );
   }

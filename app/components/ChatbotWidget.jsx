@@ -35,7 +35,7 @@ const FAQS = [
   },
   {
     q: "How do I contact a human?",
-    a: "For anything I can't help with, email support@bazrush.com or use the Contact Us option in your profile menu — a real person will get back to you.",
+    a: "For anything I can't help with, email supportbazrush@gmail.com or use the Contact Us option in your profile menu — a real person will get back to you.",
   },
 ];
 
@@ -116,7 +116,7 @@ const ChatbotWidget = () => {
     } catch {
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: "I'm having trouble replying right now — please try again or email support@bazrush.com." },
+        { from: "bot", text: "I'm having trouble replying right now — please try again or email supportbazrush@gmail.com." },
       ]);
     } finally {
       setThinking(false);
