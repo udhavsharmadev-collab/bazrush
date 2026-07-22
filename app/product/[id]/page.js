@@ -80,6 +80,7 @@ const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState([]);
 
   // selectedColorIndex: null = no color picked, number = index into product.colors
   const [selectedColorIndex, setSelectedColorIndex] = useState(null);
@@ -112,6 +113,7 @@ const [zoomScale, setZoomScale] = useState(1);
         const sellers = sellersData.sellers || (Array.isArray(sellersData) ? sellersData : []);
         const found = products.find((p) => p.id === id);
        setProduct(found || null);
+       setAllProducts(products);
 if (found) {
   // Pre-select first color and first size
   if (found.colors?.length > 0) setSelectedColorIndex(0);
@@ -191,6 +193,12 @@ if (found) {
   const cartImageId = bigImageId;
 
   const shopClosed = shop ? !isShopOpenNow(shop.timing, shop.overrideUntil, shop.overrideStatus) : false;
+
+  const relatedProducts = product
+    ? allProducts
+        .filter((p) => p.id !== product.id && p.shopId === product.shopId && p.category === product.category)
+        .slice(0, 6)
+    : [];
 
   const cartKey = product
     ? `${product.id}-${selectedColor || 'default'}-${selectedSize || 'default'}`
@@ -513,6 +521,35 @@ if (found) {
       <div>
         <p className="text-sm font-black text-rose-700">Shop is currently closed</p>
         <p className="text-xs text-rose-400 font-medium mt-0.5">Orders are not accepted right now. Please check back later.</p>
+      </div>
+    </div>
+  )}
+
+  {/* ── You may also like ── */}
+  {relatedProducts.length > 0 && (
+    <div>
+      <p className="text-sm font-black text-gray-900 mb-3">You may also like</p>
+      <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+        {relatedProducts.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => router.push(`/product/${p.id}`)}
+            className="flex-shrink-0 w-32 text-left rounded-2xl border border-gray-100 bg-gray-50 hover:border-violet-200 hover:bg-violet-50/50 transition-all duration-200 overflow-hidden"
+          >
+            <div className="w-full h-28 bg-white flex items-center justify-center">
+              <img
+                src={p.mainImageId}
+                alt={p.name}
+                className="w-full h-full object-contain p-2"
+                onError={(e) => { e.target.style.opacity = '0.2'; }}
+              />
+            </div>
+            <div className="px-2.5 py-2">
+              <p className="text-xs font-bold text-gray-800 capitalize truncate">{p.name}</p>
+              <p className="text-xs font-black text-violet-600 mt-0.5">₹{p.price}</p>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   )}
