@@ -120,11 +120,31 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
   };
 
   const uploadVideo = async (file) => {
+    // Get a signature from our own API (small payload, no file bytes)
+    const sigRes = await fetch('/api/cloudinary-video-signature', { method: 'POST' });
+    if (!sigRes.ok) throw new Error('Could not get upload signature');
+    const { signature, timestamp, folder, apiKey, cloudName } = await sigRes.json();
+
+    // Upload the actual file straight to Cloudinary from the browser
     const formData = new FormData();
-    formData.append('video', file);
-    const res = await fetch('/api/upload-product-video', { method: 'POST', body: formData });
-    if (!res.ok) throw new Error('Video upload failed');
-    return await res.text();
+    formData.append('file', file);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    formData.append('folder', folder);
+
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+      { method: 'POST', body: formData }
+    );
+
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json().catch(() => ({}));
+      throw new Error(err?.error?.message || 'Video upload failed');
+    }
+
+    const result = await uploadRes.json();
+    return result.secure_url;
   };
 
   // ── Main image ─────────────────────────────────────────────────────────────
