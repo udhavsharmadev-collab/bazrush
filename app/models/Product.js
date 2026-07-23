@@ -6,6 +6,7 @@ const ProductSchema = new mongoose.Schema({
   sizes: [String], colors: [String], colorImageIds: [String],
   price: Number,
   mainImageId: String, imageIds: [String],
+  videoId: String,
   stockQuantity: { type: Number, default: 0 },
   stockStatus: { type: String, enum: ['in_stock', 'out_of_stock'], default: 'out_of_stock' },
 }, { timestamps: true });
