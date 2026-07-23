@@ -65,6 +65,12 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
   const [colorVariants, setColorVariants] = useState([]);
   const [newColorName, setNewColorName] = useState('');
 
+  // Product video — optional, 5s–120s
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [videoId, setVideoId] = useState(null);
+  const [videoError, setVideoError] = useState('');
+
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
 
@@ -82,6 +88,10 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
     if (editingProduct.mainImageId) {
       setMainImageId(editingProduct.mainImageId);
       setMainImagePreview(`/images/${editingProduct.mainImageId}`);
+    }
+    if (editingProduct.videoId) {
+      setVideoId(editingProduct.videoId);
+      setVideoPreview(`/videos/${editingProduct.videoId}`);
     }
     // Side images
     if (editingProduct.imageIds?.length) {
@@ -109,6 +119,14 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
     return await res.text();
   };
 
+  const uploadVideo = async (file) => {
+    const formData = new FormData();
+    formData.append('video', file);
+    const res = await fetch('/api/upload-product-video', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Video upload failed');
+    return await res.text();
+  };
+
   // ── Main image ─────────────────────────────────────────────────────────────
   const handleMainImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -116,6 +134,61 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
     setMainImageFile(file);
     setMainImagePreview(URL.createObjectURL(file));
     setMainImageId(null);
+  };
+
+  // ── Video ──────────────────────────────────────────────────────────────
+  const MIN_VIDEO_SECONDS = 5;
+  const MAX_VIDEO_SECONDS = 120;
+  const MAX_VIDEO_MB = 60;
+
+  const handleVideoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoError('');
+
+    const fileMB = file.size / (1024 * 1024);
+    if (fileMB > MAX_VIDEO_MB) {
+      setVideoError(`Video is too large (max ${MAX_VIDEO_MB}MB) — try a shorter clip or lower resolution`);
+      e.target.value = '';
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.src = objectUrl;
+
+    probe.onloadedmetadata = () => {
+      const duration = probe.duration;
+      if (duration < MIN_VIDEO_SECONDS) {
+        setVideoError(`Video is too short (min ${MIN_VIDEO_SECONDS}s)`);
+        URL.revokeObjectURL(objectUrl);
+        e.target.value = '';
+        return;
+      }
+      if (duration > MAX_VIDEO_SECONDS) {
+        setVideoError(`Video is too long (max ${MAX_VIDEO_SECONDS / 60} min)`);
+        URL.revokeObjectURL(objectUrl);
+        e.target.value = '';
+        return;
+      }
+      setVideoFile(file);
+      setVideoPreview(objectUrl);
+      setVideoId(null);
+    };
+
+    probe.onerror = () => {
+      setVideoError('Could not read video file');
+      URL.revokeObjectURL(objectUrl);
+      e.target.value = '';
+    };
+  };
+
+  const removeVideo = () => {
+    setVideoFile(null);
+    setVideoPreview(null);
+    setVideoId(null);
+    setVideoError('');
   };
 
   // ── Side images ────────────────────────────────────────────────────────────
@@ -174,6 +247,13 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
         finalMainImageId = await uploadImage(mainImageFile);
       }
 
+      // Video (optional)
+      let finalVideoId = videoId;
+      if (videoFile) {
+        setUploadProgress('Uploading video…');
+        finalVideoId = await uploadVideo(videoFile);
+      }
+
       // Side images
       setUploadProgress('Uploading side images…');
       const finalImageIds = await Promise.all(
@@ -191,6 +271,7 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
         shopId,
         sellerPhone: seller.phoneNumber,
         mainImageId: finalMainImageId,
+        videoId: finalVideoId || null,
         imageIds: finalImageIds.filter(Boolean),
         colors: colorVariants.map(c => c.colorName),
         colorImageIds: finalColorImageIds,
@@ -214,6 +295,7 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
       // Reset
       setProductData({ name: '', category: '', sizes: '', price: '', stockQuantity: 0, stockStatus: 'out_of_stock' });
       setMainImageFile(null); setMainImagePreview(null); setMainImageId(null);
+      setVideoFile(null); setVideoPreview(null); setVideoId(null); setVideoError('');
       setSideImages([]);
       setColorVariants([]);
       setUploadProgress(`✅ Product ${isEditing ? 'updated' : 'added'}!`);
@@ -289,8 +371,34 @@ const ProductForm = ({ shopId, seller, editingProduct, onProductAdded }) => {
             label="Main image"
             preview={mainImagePreview}
             onChange={handleMainImageChange}
-            onRemove={() => { setMainImageFile(null); setMainImagePreview(null); setMainImageId(null); }}
+            onRemove={() => { setMainImageFile(null); setMainImagePreview(null); setMainImageId(null);
+      setVideoFile(null); setVideoPreview(null); setVideoId(null); setVideoError(''); }}
           />
+        </div>
+
+        {/* ── Video (optional) ── */}
+        <div className="p-4 rounded-2xl border border-purple-100 bg-purple-50/30">
+          <p className="text-sm font-black text-purple-700 mb-1">🎬 Product Video <span className="text-purple-400 font-normal text-xs">(optional, 5s–2min)</span></p>
+          <p className="text-[11px] text-purple-400 mb-3">Show the product in action — max 2 minutes, min 5 seconds.</p>
+          {videoPreview ? (
+            <div className="relative group">
+              <video src={videoPreview} controls className="w-full rounded-xl border-2 border-purple-100 max-h-64" />
+              <button
+                type="button"
+                onClick={removeVideo}
+                className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow"
+              >✕</button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-purple-200 rounded-xl bg-purple-50 hover:bg-purple-100 transition-all h-24 gap-1">
+              <span className="text-2xl">🎬</span>
+              <span className="text-[11px] text-purple-400 font-semibold">Click to upload video</span>
+              <input type="file" accept="video/*" className="hidden" onChange={handleVideoChange} />
+            </label>
+          )}
+          {videoError && (
+            <p className="text-xs text-red-500 font-bold mt-2 text-center">{videoError}</p>
+          )}
         </div>
 
         {/* ── Side images ── */}

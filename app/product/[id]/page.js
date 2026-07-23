@@ -89,6 +89,7 @@ const [selectedSize, setSelectedSize] = useState(null);
   // activeThumb: which thumbnail is highlighted (0 = main, 1+ = side images)
   // Only used when NO color is selected. When a color IS selected, big image = color image.
   const [activeThumb, setActiveThumb] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
   const [justAdded, setJustAdded] = useState(false);
   const [wishlistPulse, setWishlistPulse] = useState(false);
@@ -210,10 +211,17 @@ if (found) {
 
   const handleColorSelect = (index) => {
   setSelectedColorIndex(index);
+  setShowVideo(false);
 };
   const handleThumbClick = (index) => {
     setActiveThumb(index);
     // Clicking a thumbnail clears color selection so main/side image shows
+    setSelectedColorIndex(null);
+    setShowVideo(false);
+  };
+
+  const handleVideoThumbClick = () => {
+    setShowVideo(true);
     setSelectedColorIndex(null);
   };
 
@@ -292,16 +300,26 @@ if (found) {
    {/* ── Big image ── */}
 <div className="mx-4 mt-4">
   <div
-    className="w-full h-64 rounded-3xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 flex items-center justify-center relative cursor-zoom-in"
-    onClick={() => setZoomOpen(true)}
+    className={`w-full h-64 rounded-3xl overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-purple-100 flex items-center justify-center relative ${showVideo ? '' : 'cursor-zoom-in'}`}
+    onClick={() => { if (!showVideo) setZoomOpen(true); }}
   >
-    <img
-      key={bigImageId}
-      src={bigImageId}
-      alt={product.name}
-      className="w-full h-full object-contain p-4"
-      onError={(e) => { e.target.style.opacity = '0.2'; }}
-    />
+    {showVideo && product.videoId ? (
+      <video
+        src={product.videoId}
+        controls
+        autoPlay
+        playsInline
+        className="w-full h-full object-contain"
+      />
+    ) : (
+      <img
+        key={bigImageId}
+        src={bigImageId}
+        alt={product.name}
+        className="w-full h-full object-contain p-4"
+        onError={(e) => { e.target.style.opacity = '0.2'; }}
+      />
+    )}
     <span className="absolute top-3 left-3 text-[11px] font-bold px-3 py-1 rounded-full bg-white/90 backdrop-blur text-violet-600 border border-violet-100 shadow-sm uppercase tracking-wide">
       {product.category}
     </span>
@@ -321,10 +339,10 @@ if (found) {
   </div>
 
   {/* ── Thumbnails: main + side images ── */}
-  {thumbImages.length > 1 && (
+  {(thumbImages.length > 1 || product.videoId) && (
     <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
       {thumbImages.map((imgId, i) => {
-        const isActive = !selectedColorImgId && activeThumb === i;
+        const isActive = !showVideo && !selectedColorImgId && activeThumb === i;
         return (
           <button
             key={imgId}
@@ -344,6 +362,20 @@ if (found) {
           </button>
         );
       })}
+
+      {product.videoId && (
+        <button
+          onClick={handleVideoThumbClick}
+          className={`relative w-14 h-14 rounded-2xl overflow-hidden border-2 flex-shrink-0 transition-all duration-200 bg-black flex items-center justify-center ${
+            showVideo
+              ? 'border-violet-500 shadow-md shadow-violet-200'
+              : 'border-gray-200 opacity-60 hover:opacity-100 hover:border-violet-200'
+          }`}
+        >
+          <video src={product.videoId} className="w-full h-full object-cover opacity-70" muted />
+          <span className="absolute inset-0 flex items-center justify-center text-white text-lg">▶</span>
+        </button>
+      )}
     </div>
   )}
 </div>
