@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDE_DURATION = 4000;
+const SWIPE_THRESHOLD = 50; // px needed to trigger a slide change
 
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
@@ -14,6 +14,12 @@ const AdvertisementCarousel = () => {
   const [direction, setDirection] = useState(1);
   const timerRef = useRef(null);
   const slideTimeoutRef = useRef(null);
+
+  // drag state
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const pointerActive = useRef(false);
 
   useEffect(() => {
     fetch('/api/advertisement')
@@ -81,17 +87,53 @@ const AdvertisementCarousel = () => {
     }
   };
 
+  // ── Swipe / drag handlers (pointer events cover touch + mouse) ──
+  const handlePointerDown = (e) => {
+    if (!hasMultipleSlides) return;
+    pointerActive.current = true;
+    dragStartX.current = e.clientX;
+    setIsDragging(true);
+    clearInterval(timerRef.current);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!pointerActive.current) return;
+    setDragX(e.clientX - dragStartX.current);
+  };
+
+  const endDrag = () => {
+    if (!pointerActive.current) return;
+    pointerActive.current = false;
+    setIsDragging(false);
+
+    if (dragX <= -SWIPE_THRESHOLD) {
+      next();
+    } else if (dragX >= SWIPE_THRESHOLD) {
+      prev();
+    }
+    setDragX(0);
+  };
+
   return (
-    // Outer wrapper has NO border/background — just groups the two pieces vertically
     <div className="group">
-      {/* image box — its own rounded border, contains ONLY the image + arrows */}
+      {/* image box */}
       <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100">
-        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden">
+        
+          href={!isDragging ? (ad.linkUrl || '#') : undefined}
+          onClick={(e) => { if (isDragging || Math.abs(dragX) > 5) e.preventDefault(); }}
+          className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden select-none touch-pan-y cursor-grab active:cursor-grabbing"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
+          onPointerCancel={endDrag}
+        >
           {prevSlide && (
             <img
               key={`prev-${prevSlide.img.imageId}`}
               src={prevSlide.img.imageId}
               alt=""
+              draggable={false}
               className="absolute inset-0 w-full h-full object-cover slide-out"
               style={{ '--dir': direction }}
             />
@@ -100,8 +142,13 @@ const AdvertisementCarousel = () => {
             key={`${activeAd}-${activeImg}`}
             src={img.imageId}
             alt={ad.title || 'Featured shop'}
+            draggable={false}
             className={`absolute inset-0 w-full h-full object-cover ${prevSlide ? 'slide-in' : ''}`}
-            style={{ '--dir': direction }}
+            style={{
+              '--dir': direction,
+              transform: isDragging ? `translateX(${dragX}px)` : undefined,
+              transition: isDragging ? 'none' : undefined,
+            }}
           />
         </a>
 
@@ -110,20 +157,9 @@ const AdvertisementCarousel = () => {
             <p className="text-white font-medium text-sm sm:text-base">{ad.title}</p>
           </div>
         )}
-
-        {hasMultipleSlides && (
-          <>
-            <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronLeft className="w-4 h-4 text-purple-700" />
-            </button>
-            <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronRight className="w-4 h-4 text-purple-700" />
-            </button>
-          </>
-        )}
       </div>
 
-      {/* dash indicators + fill bar — completely separate block below the image box, no shared border/background */}
+      {/* dash indicators + fill bar */}
       {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 pt-3">
           {adImages.map((_, i) => (
