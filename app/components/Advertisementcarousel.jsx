@@ -15,7 +15,6 @@ const AdvertisementCarousel = () => {
   const timerRef = useRef(null);
   const slideTimeoutRef = useRef(null);
 
-  // drag state
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
@@ -24,7 +23,9 @@ const AdvertisementCarousel = () => {
   useEffect(() => {
     fetch('/api/advertisement')
       .then((res) => res.json())
-      .then((data) => { if (data.ads) setAds(data.ads); })
+      .then((data) => {
+        if (data.ads) setAds(data.ads);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -87,7 +88,6 @@ const AdvertisementCarousel = () => {
     }
   };
 
-  // ── Swipe / drag handlers (pointer events cover touch + mouse) ──
   const handlePointerDown = (e) => {
     if (!hasMultipleSlides) return;
     pointerActive.current = true;
@@ -114,13 +114,26 @@ const AdvertisementCarousel = () => {
     setDragX(0);
   };
 
+  const handleLinkClick = (e) => {
+    if (isDragging || Math.abs(dragX) > 5) {
+      e.preventDefault();
+    }
+  };
+
+  const imgStyle = {
+    '--dir': direction,
+  };
+  if (isDragging) {
+    imgStyle.transform = `translateX(${dragX}px)`;
+    imgStyle.transition = 'none';
+  }
+
   return (
     <div className="group">
-      {/* image box */}
       <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100">
-        
-          href={!isDragging ? (ad.linkUrl || '#') : undefined}
-          onClick={(e) => { if (isDragging || Math.abs(dragX) > 5) e.preventDefault(); }}
+        <a
+          href={ad.linkUrl || '#'}
+          onClick={handleLinkClick}
           className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden select-none touch-pan-y cursor-grab active:cursor-grabbing"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -144,11 +157,7 @@ const AdvertisementCarousel = () => {
             alt={ad.title || 'Featured shop'}
             draggable={false}
             className={`absolute inset-0 w-full h-full object-cover ${prevSlide ? 'slide-in' : ''}`}
-            style={{
-              '--dir': direction,
-              transform: isDragging ? `translateX(${dragX}px)` : undefined,
-              transition: isDragging ? 'none' : undefined,
-            }}
+            style={imgStyle}
           />
         </a>
 
@@ -159,7 +168,6 @@ const AdvertisementCarousel = () => {
         )}
       </div>
 
-      {/* dash indicators + fill bar */}
       {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 pt-3">
           {adImages.map((_, i) => (
@@ -185,16 +193,28 @@ const AdvertisementCarousel = () => {
 
       <style jsx>{`
         @keyframes slideInFromRight {
-          from { transform: translateX(calc(100% * var(--dir))); }
-          to { transform: translateX(0); }
+          from {
+            transform: translateX(calc(100% * var(--dir)));
+          }
+          to {
+            transform: translateX(0);
+          }
         }
         @keyframes slideOutToLeft {
-          from { transform: translateX(0); }
-          to { transform: translateX(calc(-100% * var(--dir))); }
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(calc(-100% * var(--dir)));
+          }
         }
         @keyframes fillBar {
-          from { width: 0%; }
-          to { width: 100%; }
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
         }
         .slide-in {
           animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
