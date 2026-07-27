@@ -1,36 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDE_DURATION = 4000;
-const DRAG_THRESHOLD_RATIO = 0.18; // fraction of width needed to trigger a slide change
-const SETTLE_MS = 320;
 
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // flat list of every image across every ad, so dragging just moves along one line
-  const slides = useMemo(() => {
-    const flat = [];
-    ads.forEach((ad, adIndex) => {
-      (ad.images || []).forEach((image, imgIndex) => {
-        flat.push({ adIndex, imgIndex, image, ad });
-      });
-    });
-    return flat;
-  }, [ads]);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false); // true while the release animation plays
-  const [settleTarget, setSettleTarget] = useState(0); // -1 = go prev, 0 = snap back, 1 = go next
-
-  const dragStartX = useRef(0);
-  const draggingRef = useRef(false);
-  const containerRef = useRef(null);
+  const [activeAd, setActiveAd] = useState(0);
+  const [activeImg, setActiveImg] = useState(0);
+  const [prevSlide, setPrevSlide] = useState(null);
+  const [direction, setDirection] = useState(1);
   const timerRef = useRef(null);
+  const slideTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetch('/api/advertisement')
@@ -39,188 +22,149 @@ const AdvertisementCarousel = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const hasMultipleSlides = slides.length > 1;
+  const goToSlide = (nextAd, nextImg, dir) => {
+    if (!ads.length) return;
+    const currentImg = ads[activeAd]?.images?.[activeImg] || ads[activeAd]?.images?.[0];
+    setDirection(dir);
+    setPrevSlide({ img: currentImg });
+    setActiveAd(nextAd);
+    setActiveImg(nextImg);
 
-  const startTimer = () => {
-    clearInterval(timerRef.current);
-    if (!hasMultipleSlides) return;
-    timerRef.current = setInterval(() => {
-      goNext();
-    }, SLIDE_DURATION);
+    clearTimeout(slideTimeoutRef.current);
+    slideTimeoutRef.current = setTimeout(() => setPrevSlide(null), 500);
   };
 
-  // (re)start the autoplay timer whenever the active slide settles
   useEffect(() => {
-    startTimer();
+    if (!ads.length) return;
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      const currentAdImages = ads[activeAd]?.images || [];
+      if (activeImg < currentAdImages.length - 1) {
+        goToSlide(activeAd, activeImg + 1, 1);
+      } else {
+        goToSlide((activeAd + 1) % ads.length, 0, 1);
+      }
+    }, SLIDE_DURATION);
     return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, hasMultipleSlides]);
+  }, [ads, activeAd, activeImg]);
 
-  if (loading || !slides.length) return null;
+  if (loading || !ads.length) return null;
 
-  const mod = (n, m) => ((n % m) + m) % m;
+  const ad = ads[activeAd];
+  const adImages = ad.images || [];
+  const img = adImages[activeImg] || adImages[0];
 
-  const goNext = () => {
-    setSettleTarget(1);
-    setIsSettling(true);
-  };
+  const hasMultipleSlides = ads.length > 1 || adImages.length > 1;
 
-  const goPrev = () => {
-    setSettleTarget(-1);
-    setIsSettling(true);
-  };
-
-  const goToIndex = (targetIndex) => {
-    if (targetIndex === currentIndex) return;
+  const goToImg = (imgIndex) => {
     clearInterval(timerRef.current);
-    setSettleTarget(targetIndex > currentIndex ? 1 : -1);
-    setIsSettling(true);
+    goToSlide(activeAd, imgIndex, imgIndex > activeImg ? 1 : -1);
   };
 
-  // called when the settle transition finishes (whether it moved or snapped back)
-  const handleTransitionEnd = () => {
-    if (!isSettling) return;
-    if (settleTarget !== 0) {
-      setCurrentIndex((i) => mod(i + settleTarget, slides.length));
-    }
-    setIsSettling(false);
-    setSettleTarget(0);
-    setDragX(0);
-  };
-
-  // ---- drag handlers ----
-  const handlePointerDown = (e) => {
-    if (!hasMultipleSlides || isSettling) return;
+  const prev = () => {
     clearInterval(timerRef.current);
-    draggingRef.current = true;
-    setIsDragging(true);
-    dragStartX.current = e.clientX;
-    setDragX(0);
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-  };
-
-  const handlePointerMove = (e) => {
-    if (!draggingRef.current) return;
-    setDragX(e.clientX - dragStartX.current);
-  };
-
-  const handlePointerUp = () => {
-    if (!draggingRef.current) return;
-    draggingRef.current = false;
-    setIsDragging(false);
-
-    const width = containerRef.current?.offsetWidth || 1;
-    const ratio = dragX / width;
-
-    if (ratio <= -DRAG_THRESHOLD_RATIO) {
-      setSettleTarget(1);
-    } else if (ratio >= DRAG_THRESHOLD_RATIO) {
-      setSettleTarget(-1);
+    if (activeImg > 0) {
+      goToSlide(activeAd, activeImg - 1, -1);
     } else {
-      setSettleTarget(0);
+      const prevAd = (activeAd - 1 + ads.length) % ads.length;
+      const prevAdImages = ads[prevAd]?.images || [];
+      goToSlide(prevAd, Math.max(prevAdImages.length - 1, 0), -1);
     }
-    setIsSettling(true);
   };
 
-  const prevIndex = mod(currentIndex - 1, slides.length);
-  const nextIndex = mod(currentIndex + 1, slides.length);
-
-  const current = slides[currentIndex];
-  const prevSlide = slides[prevIndex];
-  const nextSlide = slides[nextIndex];
-
-  // resting position keeps "current" centered at -100%; settling drives the track
-  // fully to -200% (next) or 0% (prev) so the swipe finishes instead of snapping
-  const finalTransform = isSettling
-    ? `translateX(${-100 + settleTarget * 100 * -1}%)`
-    : `translateX(calc(-100% + ${dragX}px))`;
-
-  const renderSlide = (slide, key) => (
-    <a
-      key={key}
-      href={slide.ad.linkUrl || '#'}
-      onClick={(e) => { if (isDragging || Math.abs(dragX) > 5) e.preventDefault(); }}
-      className="relative block w-full h-full flex-shrink-0 bg-gray-100 overflow-hidden"
-      style={{ width: '100%' }}
-      draggable={false}
-    >
-      <img
-        src={slide.image.imageId}
-        alt={slide.ad.title || 'Featured shop'}
-        className="absolute inset-0 w-full h-full object-cover"
-        draggable={false}
-      />
-      {slide.ad.title && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pointer-events-none">
-          <p className="text-white font-medium text-sm sm:text-base">{slide.ad.title}</p>
-        </div>
-      )}
-    </a>
-  );
-
-  // current-ad dot indicators (reset per ad, matching the previous behavior)
-  const dotImages = current.ad.images || [];
+  const next = () => {
+    clearInterval(timerRef.current);
+    if (activeImg < adImages.length - 1) {
+      goToSlide(activeAd, activeImg + 1, 1);
+    } else {
+      goToSlide((activeAd + 1) % ads.length, 0, 1);
+    }
+  };
 
   return (
+    // Outer wrapper has NO border/background — just groups the two pieces vertically
     <div className="group">
-      <div
-        ref={containerRef}
-        className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 select-none touch-pan-y cursor-grab active:cursor-grabbing"
-      >
-        <div
-          className="relative w-full aspect-[2/1] sm:aspect-[3/1] overflow-hidden"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-        >
-          <div
-            className="flex h-full"
-            style={{
-              width: '300%',
-              transform: finalTransform,
-              transition: isDragging ? 'none' : `transform ${SETTLE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
-            }}
-            onTransitionEnd={handleTransitionEnd}
-          >
-            <div className="w-1/3 h-full flex-shrink-0">{renderSlide(prevSlide, 'prev')}</div>
-            <div className="w-1/3 h-full flex-shrink-0">{renderSlide(current, 'current')}</div>
-            <div className="w-1/3 h-full flex-shrink-0">{renderSlide(nextSlide, 'next')}</div>
+      {/* image box — its own rounded border, contains ONLY the image + arrows */}
+      <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100">
+        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden">
+          {prevSlide && (
+            <img
+              key={`prev-${prevSlide.img.imageId}`}
+              src={prevSlide.img.imageId}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover slide-out"
+              style={{ '--dir': direction }}
+            />
+          )}
+          <img
+            key={`${activeAd}-${activeImg}`}
+            src={img.imageId}
+            alt={ad.title || 'Featured shop'}
+            className={`absolute inset-0 w-full h-full object-cover ${prevSlide ? 'slide-in' : ''}`}
+            style={{ '--dir': direction }}
+          />
+        </a>
+
+        {ad.title && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pointer-events-none">
+            <p className="text-white font-medium text-sm sm:text-base">{ad.title}</p>
           </div>
-        </div>
+        )}
+
+        {hasMultipleSlides && (
+          <>
+            <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <ChevronLeft className="w-4 h-4 text-purple-700" />
+            </button>
+            <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <ChevronRight className="w-4 h-4 text-purple-700" />
+            </button>
+          </>
+        )}
       </div>
 
+      {/* dash indicators + fill bar — completely separate block below the image box, no shared border/background */}
       {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 pt-3">
-          {dotImages.map((_, i) => {
-            const flatTarget = slides.findIndex((s) => s.adIndex === current.adIndex && s.imgIndex === i);
-            return (
-              <button
-                key={i}
-                onClick={() => goToIndex(flatTarget)}
-                className="relative h-1 w-6 rounded-full bg-purple-100 overflow-hidden"
-                aria-label={`Go to image ${i + 1}`}
-              >
-                {i === current.imgIndex ? (
-                  <span
-                    key={`${currentIndex}-bar`}
-                    className="absolute inset-y-0 left-0 bg-purple-600 rounded-full progress-fill"
-                    style={{ animationDuration: `${SLIDE_DURATION}ms` }}
-                  />
-                ) : i < current.imgIndex ? (
-                  <span className="absolute inset-0 bg-purple-300 rounded-full" />
-                ) : null}
-              </button>
-            );
-          })}
+          {adImages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToImg(i)}
+              className="relative h-1 w-6 rounded-full bg-purple-100 overflow-hidden"
+              aria-label={`Go to image ${i + 1}`}
+            >
+              {i === activeImg ? (
+                <span
+                  key={`${activeAd}-${activeImg}-bar`}
+                  className="absolute inset-y-0 left-0 bg-purple-600 rounded-full progress-fill"
+                  style={{ animationDuration: `${SLIDE_DURATION}ms` }}
+                />
+              ) : i < activeImg ? (
+                <span className="absolute inset-0 bg-purple-300 rounded-full" />
+              ) : null}
+            </button>
+          ))}
         </div>
       )}
 
       <style jsx>{`
+        @keyframes slideInFromRight {
+          from { transform: translateX(calc(100% * var(--dir))); }
+          to { transform: translateX(0); }
+        }
+        @keyframes slideOutToLeft {
+          from { transform: translateX(0); }
+          to { transform: translateX(calc(-100% * var(--dir))); }
+        }
         @keyframes fillBar {
           from { width: 0%; }
           to { width: 100%; }
+        }
+        .slide-in {
+          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-out {
+          animation: slideOutToLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         .progress-fill {
           width: 0%;
