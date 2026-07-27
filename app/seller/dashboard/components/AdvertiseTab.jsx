@@ -41,6 +41,7 @@ async function uploadImageToCloudinary(file, onProgress) {
 
 const AdvertiseTab = ({ seller }) => {
   const fileInputRef = useRef(null);
+  const sellerPhone = seller?.phoneNumber || seller?.phone || seller?.sellerPhone || seller?.mobile || seller?.mobileNumber || seller?.contactNumber || '';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
@@ -61,11 +62,11 @@ const AdvertiseTab = ({ seller }) => {
   }, [images.length]);
 
   useEffect(() => {
-    if (!seller?.phone) { setLoading(false); setMessage('❌ Seller phone not found — can\'t load or save your ad'); return; }
+    if (!sellerPhone) { setLoading(false); setMessage('❌ Seller phone not found — can\'t load or save your ad'); return; }
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/advertisement?sellerPhone=${encodeURIComponent(seller.phone)}`);
+        const res = await fetch(`/api/advertisement?sellerPhone=${encodeURIComponent(sellerPhone)}`);
         const data = await res.json();
         if (!cancelled && data.ad) {
           setTitle(data.ad.title || '');
@@ -82,7 +83,7 @@ const AdvertiseTab = ({ seller }) => {
       }
     })();
     return () => { cancelled = true; };
-  }, [seller?.phone]);
+  }, [sellerPhone]);
 
   const handleFilesSelected = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -131,7 +132,7 @@ const AdvertiseTab = ({ seller }) => {
       const res = await fetch('/api/advertisement', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sellerPhone: seller.phone, title, linkUrl, images, isActive }),
+        body: JSON.stringify({ sellerPhone, title, linkUrl, images, isActive }),
       });
       const data = await res.json();
       if (data.success) {
