@@ -3,15 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+const SLIDE_DURATION = 4000;
+
 // One slide per seller's ad, auto-advancing through that ad's own images
-// underneath, with a smooth sliding transition between slides.
+// underneath, with a smooth sliding transition and story-style progress bars.
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeAd, setActiveAd] = useState(0);
   const [activeImg, setActiveImg] = useState(0);
-  const [prevSlide, setPrevSlide] = useState(null); // { img } sliding out
-  const [direction, setDirection] = useState(1); // 1 = forward (next), -1 = backward (prev)
+  const [prevSlide, setPrevSlide] = useState(null);
+  const [direction, setDirection] = useState(1);
   const timerRef = useRef(null);
   const slideTimeoutRef = useRef(null);
 
@@ -44,7 +46,7 @@ const AdvertisementCarousel = () => {
       } else {
         goToSlide((activeAd + 1) % ads.length, 0, 1);
       }
-    }, 4000);
+    }, SLIDE_DURATION);
     return () => clearInterval(timerRef.current);
   }, [ads, activeAd, activeImg]);
 
@@ -53,9 +55,18 @@ const AdvertisementCarousel = () => {
   const ad = ads[activeAd];
   const img = ad.images[activeImg] || ad.images[0];
 
-  const goTo = (adIndex) => goToSlide(adIndex, 0, adIndex > activeAd ? 1 : -1);
-  const prev = () => goToSlide((activeAd - 1 + ads.length) % ads.length, 0, -1);
-  const next = () => goToSlide((activeAd + 1) % ads.length, 0, 1);
+  const goTo = (adIndex) => {
+    clearInterval(timerRef.current);
+    goToSlide(adIndex, 0, adIndex > activeAd ? 1 : -1);
+  };
+  const prev = () => {
+    clearInterval(timerRef.current);
+    goToSlide((activeAd - 1 + ads.length) % ads.length, 0, -1);
+  };
+  const next = () => {
+    clearInterval(timerRef.current);
+    goToSlide((activeAd + 1) % ads.length, 0, 1);
+  };
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 group">
@@ -92,9 +103,21 @@ const AdvertisementCarousel = () => {
           <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
             <ChevronRight className="w-4 h-4 text-purple-700" />
           </button>
-          <div className="absolute bottom-2 right-3 flex gap-1 z-10">
+
+          {/* story-style progress dashes */}
+          <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
             {ads.map((_, i) => (
-              <span key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeAd ? 'bg-white w-3' : 'bg-white/40'}`} />
+              <div key={i} className="h-[3px] flex-1 rounded-full bg-white/30 overflow-hidden">
+                {i === activeAd ? (
+                  <div
+                    key={`${activeAd}-${activeImg}-bar`}
+                    className="h-full bg-white progress-fill"
+                    style={{ animationDuration: `${SLIDE_DURATION}ms` }}
+                  />
+                ) : (
+                  <div className={`h-full bg-white ${i < activeAd ? 'w-full' : 'w-0'}`} />
+                )}
+              </div>
             ))}
           </div>
         </>
@@ -109,11 +132,21 @@ const AdvertisementCarousel = () => {
           from { transform: translateX(0); }
           to { transform: translateX(calc(-100% * var(--dir))); }
         }
+        @keyframes fillBar {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
         .slide-in {
           animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         .slide-out {
           animation: slideOutToLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .progress-fill {
+          width: 0%;
+          animation-name: fillBar;
+          animation-timing-function: linear;
+          animation-fill-mode: forwards;
         }
       `}</style>
     </div>
