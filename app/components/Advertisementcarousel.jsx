@@ -82,9 +82,10 @@ const AdvertisementCarousel = () => {
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 group">
-      {/* image area — aspect ratio alone controls height, no competing max-height, so it fills fully with no crop-fight */}
-      <div className="relative">
+    // Outer wrapper has NO border/background — just groups the two pieces vertically
+    <div className="group">
+      {/* image box — its own rounded border, contains ONLY the image + arrows */}
+      <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100">
         <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden">
           {prevSlide && (
             <img
@@ -122,9 +123,9 @@ const AdvertisementCarousel = () => {
         )}
       </div>
 
-      {/* dash indicators + fill bar — separate row below, never touches the image box */}
+      {/* dash indicators + fill bar — completely separate block below the image box, no shared border/background */}
       {hasMultipleSlides && (
-        <div className="flex items-center justify-center gap-1.5 py-2.5 bg-white">
+        <div className="flex items-center justify-center gap-1.5 pt-3">
           {adImages.map((_, i) => (
             <button
               key={i}
