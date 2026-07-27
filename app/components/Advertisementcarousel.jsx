@@ -5,9 +5,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDE_DURATION = 4000;
 
-// One slide per seller's ad, auto-advancing through that ad's own images
-// underneath. Dash indicators track images WITHIN the active ad (story-style),
-// so a single ad with multiple images still shows navigation.
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,16 +48,14 @@ const AdvertisementCarousel = () => {
     return () => clearInterval(timerRef.current);
   }, [ads, activeAd, activeImg]);
 
-  if (loading || !ads.length) return null; // nothing active — homepage just skips this section
+  if (loading || !ads.length) return null;
 
   const ad = ads[activeAd];
   const adImages = ad.images || [];
   const img = adImages[activeImg] || adImages[0];
 
-  // total slides anywhere (across all ads' images) — controls whether nav shows at all
   const hasMultipleSlides = ads.length > 1 || adImages.length > 1;
 
-  // move to a specific image index within the CURRENT ad
   const goToImg = (imgIndex) => {
     clearInterval(timerRef.current);
     goToSlide(activeAd, imgIndex, imgIndex > activeImg ? 1 : -1);
@@ -88,9 +83,9 @@ const AdvertisementCarousel = () => {
 
   return (
     <div className="rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 group">
-      {/* image area */}
+      {/* image area — aspect ratio alone controls height, no competing max-height, so it fills fully with no crop-fight */}
       <div className="relative">
-        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] max-h-[180px] sm:max-h-[260px] bg-gray-100 overflow-hidden">
+        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden">
           {prevSlide && (
             <img
               key={`prev-${prevSlide.img.imageId}`}
@@ -127,7 +122,7 @@ const AdvertisementCarousel = () => {
         )}
       </div>
 
-      {/* dash indicators + fill bar, below the image — one dash per image in the CURRENT ad */}
+      {/* dash indicators + fill bar — separate row below, never touches the image box */}
       {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 py-2.5 bg-white">
           {adImages.map((_, i) => (
