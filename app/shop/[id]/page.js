@@ -331,7 +331,7 @@ const ShopPage = () => {
                   )}
                 </div>
 
-                {/* Category pills */}
+                {/* Category are the bests pills */}
                 {categories.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
                     <button
