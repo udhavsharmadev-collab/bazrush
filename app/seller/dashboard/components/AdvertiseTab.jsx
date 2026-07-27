@@ -50,9 +50,18 @@ const AdvertiseTab = ({ seller }) => {
   const [linkUrl, setLinkUrl] = useState('');
   const [isActive, setIsActive] = useState(false);
   const [images, setImages] = useState([]); // [{ url, publicId, order }]
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   useEffect(() => {
-    if (!seller?.phone) return;
+    if (images.length < 2) { setPreviewIndex(0); return; }
+    const id = setInterval(() => {
+      setPreviewIndex((i) => (i + 1) % images.length);
+    }, 2500);
+    return () => clearInterval(id);
+  }, [images.length]);
+
+  useEffect(() => {
+    if (!seller?.phone) { setLoading(false); setMessage('❌ Seller phone not found — can\'t load or save your ad'); return; }
     let cancelled = false;
     (async () => {
       try {
@@ -166,6 +175,41 @@ const AdvertiseTab = ({ seller }) => {
           {message}
         </div>
       )}
+
+      {/* Live preview — how this'll look cycling on the homepage */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <p className="font-medium text-gray-800">Preview</p>
+        <div className="relative rounded-xl overflow-hidden aspect-[16/7] bg-gray-100 border border-gray-200">
+          {images.length > 0 ? (
+            <>
+              <img
+                src={images[previewIndex]?.url}
+                alt=""
+                className="w-full h-full object-cover transition-opacity duration-500"
+              />
+              {title && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <p className="text-white text-sm font-medium">{title}</p>
+                </div>
+              )}
+              {images.length > 1 && (
+                <div className="absolute bottom-2 right-3 flex gap-1">
+                  {images.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full ${i === previewIndex ? 'bg-white' : 'bg-white/40'}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+              Add images below to see your carousel here
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Active toggle */}
       <div className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
