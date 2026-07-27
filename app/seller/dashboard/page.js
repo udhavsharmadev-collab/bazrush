@@ -13,6 +13,7 @@ import ProfileTab from './components/ProfileTab';
 import ProductsTab from './components/ProductsTab';
 import CouponsTab from './components/CouponsTab';
 import WithdrawTab from './components/WithdrawTab';
+import AdvertiseTab from './components/AdvertiseTab';
 
 const SellerDashboard = () => {
   const router = useRouter();
@@ -71,6 +72,7 @@ const SellerDashboard = () => {
           {activeTab === 'products'  && <ProductsTab seller={seller} />}
           {activeTab === 'coupons'   && <CouponsTab seller={seller} />}
           {activeTab === 'withdraw'  && <WithdrawTab seller={seller} />}
+          {activeTab === 'advertise' && <AdvertiseTab seller={seller} />}
           {activeTab === 'profile'   && (
             <ProfileTab seller={seller} isEditing={isEditing} editMessage={editMessage} editFormData={editFormData}
               handleEditChange={handleEditChange} handleSaveProfile={handleSaveProfile}

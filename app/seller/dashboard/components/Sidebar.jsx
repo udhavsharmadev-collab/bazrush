@@ -1,4 +1,4 @@
-import { LogOut, LayoutDashboard, ShoppingBag, Store, MessageCircle, User, X, Menu, ChevronRight, FileText, Ticket, Wallet } from 'lucide-react';
+import { LogOut, LayoutDashboard, ShoppingBag, Store, MessageCircle, User, X, Menu, ChevronRight, FileText, Ticket, Wallet, Megaphone } from 'lucide-react';
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -7,6 +7,7 @@ const navigationItems = [
   { id: 'products', label: 'Products', icon: ShoppingBag },
   { id: 'coupons', label: 'Coupons', icon: Ticket },
   { id: 'withdraw', label: 'Withdraw', icon: Wallet },
+  { id: 'advertise', label: 'Advertise', icon: Megaphone },
   { id: 'reviews', label: 'Reviews', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
