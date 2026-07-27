@@ -44,7 +44,7 @@ const AdvertisementCarousel = () => {
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 group">
-      <a href={ad.linkUrl || '#'} className="block aspect-[16/7] sm:aspect-[21/7] bg-gray-100">
+      <a href={ad.linkUrl || '#'} className="block aspect-[2/1] sm:aspect-[3/1] max-h-[180px] sm:max-h-[260px] bg-gray-100">
         <img
           key={`${activeAd}-${activeImg}`}
          src={img.imageId}
