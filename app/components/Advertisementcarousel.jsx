@@ -6,7 +6,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const SLIDE_DURATION = 4000;
 
 // One slide per seller's ad, auto-advancing through that ad's own images
-// underneath. Dash indicators + a fill bar live BELOW the image, not on top of it.
+// underneath. Dash indicators track images WITHIN the active ad (story-style),
+// so a single ad with multiple images still shows navigation.
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,26 +54,43 @@ const AdvertisementCarousel = () => {
   if (loading || !ads.length) return null; // nothing active — homepage just skips this section
 
   const ad = ads[activeAd];
-  const img = ad.images[activeImg] || ad.images[0];
+  const adImages = ad.images || [];
+  const img = adImages[activeImg] || adImages[0];
 
-  const goTo = (adIndex) => {
+  // total slides anywhere (across all ads' images) — controls whether nav shows at all
+  const hasMultipleSlides = ads.length > 1 || adImages.length > 1;
+
+  // move to a specific image index within the CURRENT ad
+  const goToImg = (imgIndex) => {
     clearInterval(timerRef.current);
-    goToSlide(adIndex, 0, adIndex > activeAd ? 1 : -1);
+    goToSlide(activeAd, imgIndex, imgIndex > activeImg ? 1 : -1);
   };
+
   const prev = () => {
     clearInterval(timerRef.current);
-    goToSlide((activeAd - 1 + ads.length) % ads.length, 0, -1);
+    if (activeImg > 0) {
+      goToSlide(activeAd, activeImg - 1, -1);
+    } else {
+      const prevAd = (activeAd - 1 + ads.length) % ads.length;
+      const prevAdImages = ads[prevAd]?.images || [];
+      goToSlide(prevAd, Math.max(prevAdImages.length - 1, 0), -1);
+    }
   };
+
   const next = () => {
     clearInterval(timerRef.current);
-    goToSlide((activeAd + 1) % ads.length, 0, 1);
+    if (activeImg < adImages.length - 1) {
+      goToSlide(activeAd, activeImg + 1, 1);
+    } else {
+      goToSlide((activeAd + 1) % ads.length, 0, 1);
+    }
   };
 
   return (
     <div className="rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 group">
       {/* image area */}
       <div className="relative">
-        <a href={ad.linkUrl || '#'} className="block relative aspect-[2/1] sm:aspect-[3/1] max-h-[180px] sm:max-h-[260px] bg-gray-100 overflow-hidden">
+        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] max-h-[180px] sm:max-h-[260px] bg-gray-100 overflow-hidden">
           {prevSlide && (
             <img
               key={`prev-${prevSlide.img.imageId}`}
@@ -97,7 +115,7 @@ const AdvertisementCarousel = () => {
           </div>
         )}
 
-        {ads.length > 1 && (
+        {hasMultipleSlides && (
           <>
             <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <ChevronLeft className="w-4 h-4 text-purple-700" />
@@ -109,23 +127,23 @@ const AdvertisementCarousel = () => {
         )}
       </div>
 
-      {/* dash indicators + fill bar, below the image */}
-      {ads.length > 1 && (
+      {/* dash indicators + fill bar, below the image — one dash per image in the CURRENT ad */}
+      {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 py-2.5 bg-white">
-          {ads.map((_, i) => (
+          {adImages.map((_, i) => (
             <button
               key={i}
-              onClick={() => goTo(i)}
+              onClick={() => goToImg(i)}
               className="relative h-1 w-6 rounded-full bg-purple-100 overflow-hidden"
-              aria-label={`Go to slide ${i + 1}`}
+              aria-label={`Go to image ${i + 1}`}
             >
-              {i === activeAd ? (
+              {i === activeImg ? (
                 <span
                   key={`${activeAd}-${activeImg}-bar`}
                   className="absolute inset-y-0 left-0 bg-purple-600 rounded-full progress-fill"
                   style={{ animationDuration: `${SLIDE_DURATION}ms` }}
                 />
-              ) : i < activeAd ? (
+              ) : i < activeImg ? (
                 <span className="absolute inset-0 bg-purple-300 rounded-full" />
               ) : null}
             </button>
