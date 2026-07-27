@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSeller } from './context/SellerContext';
 import ChatbotWidget from './components/ChatbotWidget';
-import AdvertisementCarousel from './components/AdvertisementCarousel';
+import AdvertisementCarousel from './components/Advertisementcarousel';
 
 
 
