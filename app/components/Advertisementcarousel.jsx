@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDE_DURATION = 4000;
+const DRAG_THRESHOLD = 50; // px to trigger a slide change
 
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
@@ -12,6 +12,13 @@ const AdvertisementCarousel = () => {
   const [activeImg, setActiveImg] = useState(0);
   const [prevSlide, setPrevSlide] = useState(null);
   const [direction, setDirection] = useState(1);
+
+  // drag state
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const draggingRef = useRef(false);
+
   const timerRef = useRef(null);
   const slideTimeoutRef = useRef(null);
 
@@ -81,12 +88,51 @@ const AdvertisementCarousel = () => {
     }
   };
 
+  // ---- drag handlers ----
+  const handlePointerDown = (e) => {
+    if (!hasMultipleSlides) return;
+    clearInterval(timerRef.current);
+    draggingRef.current = true;
+    setIsDragging(true);
+    dragStartX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    setDragX(0);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!draggingRef.current) return;
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    setDragX(clientX - dragStartX.current);
+  };
+
+  const handlePointerUp = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+
+    if (dragX <= -DRAG_THRESHOLD) {
+      next();
+    } else if (dragX >= DRAG_THRESHOLD) {
+      prev();
+    }
+    setDragX(0);
+  };
+
   return (
-    // Outer wrapper has NO border/background — just groups the two pieces vertically
     <div className="group">
-      {/* image box — its own rounded border, contains ONLY the image + arrows */}
-      <div className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100">
-        <a href={ad.linkUrl || '#'} className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden">
+      <div
+        className="relative rounded-2xl overflow-hidden shadow-md shadow-purple-100 border border-purple-100 select-none touch-pan-y cursor-grab active:cursor-grabbing"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <a
+          href={ad.linkUrl || '#'}
+          onClickCapture={(e) => { if (Math.abs(dragX) > 5 || isDragging) e.preventDefault(); }}
+          className="block w-full relative aspect-[2/1] sm:aspect-[3/1] bg-gray-100 overflow-hidden"
+        >
           {prevSlide && (
             <img
               key={`prev-${prevSlide.img.imageId}`}
@@ -94,6 +140,7 @@ const AdvertisementCarousel = () => {
               alt=""
               className="absolute inset-0 w-full h-full object-cover slide-out"
               style={{ '--dir': direction }}
+              draggable={false}
             />
           )}
           <img
@@ -101,7 +148,12 @@ const AdvertisementCarousel = () => {
             src={img.imageId}
             alt={ad.title || 'Featured shop'}
             className={`absolute inset-0 w-full h-full object-cover ${prevSlide ? 'slide-in' : ''}`}
-            style={{ '--dir': direction }}
+            style={{
+              '--dir': direction,
+              transform: isDragging ? `translateX(${dragX}px)` : undefined,
+              transition: isDragging ? 'none' : 'transform 0.25s ease',
+            }}
+            draggable={false}
           />
         </a>
 
@@ -110,20 +162,8 @@ const AdvertisementCarousel = () => {
             <p className="text-white font-medium text-sm sm:text-base">{ad.title}</p>
           </div>
         )}
-
-        {hasMultipleSlides && (
-          <>
-            <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronLeft className="w-4 h-4 text-purple-700" />
-            </button>
-            <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronRight className="w-4 h-4 text-purple-700" />
-            </button>
-          </>
-        )}
       </div>
 
-      {/* dash indicators + fill bar — completely separate block below the image box, no shared border/background */}
       {hasMultipleSlides && (
         <div className="flex items-center justify-center gap-1.5 pt-3">
           {adImages.map((_, i) => (
