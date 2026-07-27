@@ -8,8 +8,7 @@ import mongoose from 'mongoose';
 
 const AdImageSchema = new mongoose.Schema(
   {
-    url: { type: String, required: true },
-    publicId: { type: String, required: true },
+    imageId: { type: String, required: true },
     order: { type: Number, default: 0 },
   },
   { _id: false }

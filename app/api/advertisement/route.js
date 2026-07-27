@@ -44,7 +44,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Maximum 6 images per carousel' }, { status: 400 });
     }
 
-    const cleanImages = images.map((img, i) => ({ url: img.url, publicId: img.publicId, order: i }));
+    const cleanImages = images.map((img, i) => ({ imageId: img.imageId, order: i }));
 
     const ad = await Advertisement.findOneAndUpdate(
       { sellerPhone: body.sellerPhone },

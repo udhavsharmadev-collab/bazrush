@@ -5,38 +5,13 @@ import { ImagePlus, X, ChevronUp, ChevronDown, Megaphone, Loader2 } from 'lucide
 
 const MAX_IMAGES = 6;
 
-// TODO: confirm this matches the signature route you already built for
-// product video uploads (memory says it's "a separate signature API route").
-// If the endpoint/param names differ, adjust the two spots marked below.
-async function uploadImageToCloudinary(file, onProgress) {
-  const sigRes = await fetch('/api/cloudinary/signature', { method: 'POST' });
-  if (!sigRes.ok) throw new Error('Could not get upload signature');
-  const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
-
+// Matches ProductForm.jsx's uploadImage() exactly — same endpoint your products already use.
+async function uploadImage(file) {
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('signature', signature);
-  formData.append('timestamp', timestamp);
-  formData.append('api_key', apiKey);
-  if (folder) formData.append('folder', folder);
-
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const data = JSON.parse(xhr.responseText);
-        resolve({ url: data.secure_url, publicId: data.public_id });
-      } else {
-        reject(new Error('Cloudinary upload failed'));
-      }
-    };
-    xhr.onerror = () => reject(new Error('Cloudinary upload failed'));
-    xhr.send(formData);
-  });
+  formData.append('image', file);
+  const res = await fetch('/api/upload-product-image', { method: 'POST', body: formData });
+  if (!res.ok) throw new Error('Upload failed');
+  return await res.text(); // returns the image id as plain text
 }
 
 const AdvertiseTab = ({ seller }) => {
@@ -101,8 +76,8 @@ const AdvertiseTab = ({ seller }) => {
 
     for (const file of toUpload) {
       try {
-        const uploaded = await uploadImageToCloudinary(file);
-        setImages((prev) => [...prev, { ...uploaded, order: prev.length }]);
+        const imageId = await uploadImage(file);
+        setImages((prev) => [...prev, { imageId, order: prev.length }]);
       } catch {
         setMessage('❌ One of the images failed to upload — try again');
       } finally {
@@ -111,8 +86,8 @@ const AdvertiseTab = ({ seller }) => {
     }
   };
 
-  const removeImage = (publicId) => {
-    setImages((prev) => prev.filter((img) => img.publicId !== publicId));
+  const removeImage = (imageId) => {
+    setImages((prev) => prev.filter((img) => img.imageId !== imageId));
   };
 
   const moveImage = (index, direction) => {
@@ -184,7 +159,7 @@ const AdvertiseTab = ({ seller }) => {
           {images.length > 0 ? (
             <>
               <img
-                src={images[previewIndex]?.url}
+                src={`/images/${images[previewIndex]?.imageId}`}
                 alt=""
                 className="w-full h-full object-cover transition-opacity duration-500"
               />
@@ -238,11 +213,11 @@ const AdvertiseTab = ({ seller }) => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {images.map((img, index) => (
-            <div key={img.publicId} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
-              <img src={img.url} alt="" className="w-full h-full object-cover" />
+            <div key={img.imageId} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
+              <img src={`/images/${img.imageId}`} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
-                onClick={() => removeImage(img.publicId)}
+                onClick={() => removeImage(img.imageId)}
                 className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="w-3.5 h-3.5" />
