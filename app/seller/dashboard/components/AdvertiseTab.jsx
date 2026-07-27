@@ -159,7 +159,7 @@ const AdvertiseTab = ({ seller }) => {
           {images.length > 0 ? (
             <>
               <img
-                src={`/images/${images[previewIndex]?.imageId}`}
+                 src={images[previewIndex]?.imageId}
                 alt=""
                 className="w-full h-full object-cover transition-opacity duration-500"
               />
@@ -214,7 +214,8 @@ const AdvertiseTab = ({ seller }) => {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {images.map((img, index) => (
             <div key={img.imageId} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
-              <img src={`/images/${img.imageId}`} alt="" className="w-full h-full object-cover" />
+              
+              <img src={img.imageId} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => removeImage(img.imageId)}

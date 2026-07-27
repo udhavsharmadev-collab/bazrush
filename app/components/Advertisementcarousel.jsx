@@ -47,7 +47,7 @@ const AdvertisementCarousel = () => {
       <a href={ad.linkUrl || '#'} className="block aspect-[16/7] sm:aspect-[21/7] bg-gray-100">
         <img
           key={`${activeAd}-${activeImg}`}
-          src={`/images/${img.imageId}`}
+         src={img.imageId}
           alt={ad.title || 'Featured shop'}
           className="w-full h-full object-cover adfade"
         />
