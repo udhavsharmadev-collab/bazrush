@@ -17,13 +17,11 @@ const AdImageSchema = new mongoose.Schema(
 
 const AdvertisementSchema = new mongoose.Schema(
   {
-    sellerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Seller',
+    sellerPhone: {
+      type: String,
       required: true,
       unique: true, // one ad "slot" per seller — adjust if you want multiple
     },
-    shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
     title: { type: String, default: '', trim: true, maxlength: 60 },
     linkUrl: { type: String, default: '' }, // where tapping the banner sends customers (defaults to the seller's shop page if empty)
     images: {

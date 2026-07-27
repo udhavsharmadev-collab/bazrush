@@ -52,16 +52,19 @@ const AdvertiseTab = ({ seller }) => {
   const [images, setImages] = useState([]); // [{ url, publicId, order }]
 
   useEffect(() => {
+    if (!seller?.phone) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/advertisement');
+        const res = await fetch(`/api/advertisement?sellerPhone=${encodeURIComponent(seller.phone)}`);
         const data = await res.json();
-        if (!cancelled && data.success) {
+        if (!cancelled && data.ad) {
           setTitle(data.ad.title || '');
           setLinkUrl(data.ad.linkUrl || '');
           setIsActive(!!data.ad.isActive);
           setImages(data.ad.images || []);
+        } else if (!cancelled && data.error) {
+          setMessage(`❌ ${data.error}`);
         }
       } catch {
         if (!cancelled) setMessage('❌ Could not load your advertisement');
@@ -70,7 +73,7 @@ const AdvertiseTab = ({ seller }) => {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [seller?.phone]);
 
   const handleFilesSelected = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -119,7 +122,7 @@ const AdvertiseTab = ({ seller }) => {
       const res = await fetch('/api/advertisement', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, linkUrl, images, isActive }),
+        body: JSON.stringify({ sellerPhone: seller.phone, title, linkUrl, images, isActive }),
       });
       const data = await res.json();
       if (data.success) {

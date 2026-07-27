@@ -1,57 +1,60 @@
+import { connectDB } from '../../lib/mongodb.js';
+import Advertisement from '../../models/Advertisement.js';
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb'; // TODO: swap for your actual db connect helper if named differently
-import Advertisement from '@/models/Advertisement';
-import { getSellerIdFromRequest } from '@/lib/auth'; // TODO: replace with whatever you already use in /api/seller/profile — make sure it resolves to null (not throw) when there's no seller cookie, since the homepage hits this route unauthenticated
 
 // GET
-//   - called with a seller session (dashboard)  -> returns { success, ad } for that seller, active or not
-//   - called with no seller session (homepage)   -> returns { success, ads } — every seller's active carousel
-export async function GET(req) {
+//   /api/advertisement?sellerPhone=...  -> that seller's own ad (dashboard), active or not
+//   /api/advertisement                  -> every active seller's ad (homepage), public
+export async function GET(request) {
   try {
     await connectDB();
-    const sellerId = await getSellerIdFromRequest(req).catch(() => null);
+    const sellerPhone = request.nextUrl.searchParams.get('sellerPhone');
 
-    if (sellerId) {
-      let ad = await Advertisement.findOne({ sellerId });
+    if (sellerPhone) {
+      let ad = await Advertisement.findOne({ sellerPhone }).lean();
       if (!ad) ad = { title: '', linkUrl: '', images: [], isActive: false };
-      return NextResponse.json({ success: true, ad });
+      return NextResponse.json({ ad });
     }
 
     const ads = await Advertisement.find({ isActive: true, 'images.0': { $exists: true } })
-      .populate('shopId', 'name slug') // adjust fields to whatever ShopSchema actually exposes
       .sort({ updatedAt: -1 })
       .limit(20)
       .lean();
-    return NextResponse.json({ success: true, ads });
+    return NextResponse.json({ ads });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Fetch advertisement error:', error);
+    return NextResponse.json({ error: 'Failed to read advertisement' }, { status: 500 });
   }
 }
 
-// PUT — seller-only, saves their own ad
-export async function PUT(req) {
+// PUT — create or update the calling seller's ad. Body must include sellerPhone.
+export async function PUT(request) {
   try {
     await connectDB();
-    const sellerId = await getSellerIdFromRequest(req);
-    if (!sellerId) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+    const body = await request.json();
 
-    const body = await req.json();
-    const { title = '', linkUrl = '', images = [], isActive = false } = body;
+    if (!body.sellerPhone) return NextResponse.json({ error: 'sellerPhone required' }, { status: 400 });
+
+    const title = (body.title || '').trim();
+    const linkUrl = body.linkUrl || '';
+    const isActive = !!body.isActive;
+    const images = Array.isArray(body.images) ? body.images : [];
 
     if (images.length > 6) {
-      return NextResponse.json({ success: false, error: 'Maximum 6 images per carousel' }, { status: 400 });
+      return NextResponse.json({ error: 'Maximum 6 images per carousel' }, { status: 400 });
     }
 
     const cleanImages = images.map((img, i) => ({ url: img.url, publicId: img.publicId, order: i }));
 
     const ad = await Advertisement.findOneAndUpdate(
-      { sellerId },
-      { sellerId, title, linkUrl, images: cleanImages, isActive },
+      { sellerPhone: body.sellerPhone },
+      { sellerPhone: body.sellerPhone, title, linkUrl, images: cleanImages, isActive },
       { upsert: true, new: true, runValidators: true }
     );
 
     return NextResponse.json({ success: true, ad });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Save advertisement error:', error);
+    return NextResponse.json({ error: 'Failed to save advertisement' }, { status: 500 });
   }
 }
