@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSeller } from './context/SellerContext';
 import ChatbotWidget from './components/ChatbotWidget';
+import AdvertisementCarousel from './components/AdvertisementCarousel';
 
 
 
@@ -536,6 +537,11 @@ const Page = () => {
         >
           Start Shopping
         </a>
+      </section>
+
+      {/* Advertisement */}
+      <section className="px-5 pt-6">
+        <AdvertisementCarousel />
       </section>
 
       {/* Products by Category */}
