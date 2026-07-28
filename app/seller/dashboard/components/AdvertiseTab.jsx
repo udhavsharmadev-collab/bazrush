@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { ImagePlus, X, ChevronUp, ChevronDown, Megaphone, Loader2 } from 'lucide-react';
 
 const MAX_IMAGES = 6;
@@ -27,6 +27,20 @@ const AdvertiseTab = ({ seller }) => {
   const [isActive, setIsActive] = useState(false);
   const [images, setImages] = useState([]); // [{ url, publicId, order }]
   const [previewIndex, setPreviewIndex] = useState(0);
+
+  const [linkType, setLinkType] = useState('none'); // 'none' | 'shop' | 'product'
+  const [linkTarget, setLinkTarget] = useState(null); // { id, name, image }
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerSearch, setPickerSearch] = useState('');
+  const [ownProducts, setOwnProducts] = useState([]);
+
+  const ownShops = useMemo(() => {
+    return (seller?.shops || []).map((s) => ({
+      id: s.id || s.shopId,
+      name: s.shopName || s.name,
+      image: s.mainPhotoId,
+    }));
+  }, [seller]);
 
   useEffect(() => {
     if (images.length < 2) { setPreviewIndex(0); return; }
@@ -59,6 +73,38 @@ const AdvertiseTab = ({ seller }) => {
     })();
     return () => { cancelled = true; };
   }, [sellerPhone]);
+
+  // Fetch this seller's own products (for the redirect picker)
+  useEffect(() => {
+    const shopIds = (seller?.shops || []).map((s) => s.id || s.shopId);
+    if (!shopIds.length) return;
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        const products = data.products || data || [];
+        setOwnProducts(
+          products
+            .filter((p) => shopIds.includes(p.shopId))
+            .map((p) => ({ id: p.id, name: p.name, image: p.mainImageId }))
+        );
+      })
+      .catch(() => {});
+  }, [seller]);
+
+  // Resolve the saved linkUrl back into a picked shop/product once data is loaded
+  useEffect(() => {
+    if (!linkUrl) { setLinkType('none'); setLinkTarget(null); return; }
+    const shopMatch = linkUrl.match(/^\/shop\/(.+)$/);
+    const productMatch = linkUrl.match(/^\/product\/(.+)$/);
+    if (shopMatch) {
+      const found = ownShops.find((s) => s.id === shopMatch[1]);
+      if (found) { setLinkType('shop'); setLinkTarget(found); return; }
+    }
+    if (productMatch) {
+      const found = ownProducts.find((p) => p.id === productMatch[1]);
+      if (found) { setLinkType('product'); setLinkTarget(found); return; }
+    }
+  }, [linkUrl, ownShops, ownProducts]);
 
   const handleFilesSelected = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -99,6 +145,26 @@ const AdvertiseTab = ({ seller }) => {
       return next;
     });
   };
+
+  const selectLinkTarget = (type, target) => {
+    setLinkType(type);
+    setLinkTarget(target);
+    setLinkUrl(`/${type}/${target.id}`);
+    setPickerOpen(false);
+    setPickerSearch('');
+  };
+
+  const clearLink = () => {
+    setLinkType('none');
+    setLinkTarget(null);
+    setLinkUrl('');
+  };
+
+  const pickerList = linkType === 'shop' ? ownShops : linkType === 'product' ? ownProducts : [];
+  const pickerResults = (() => {
+    const q = pickerSearch.toLowerCase().trim();
+    return (q ? pickerList.filter((item) => item.name?.toLowerCase().includes(q)) : pickerList).slice(0, 20);
+  })();
 
   const handleSave = async () => {
     setSaving(true);
@@ -268,14 +334,95 @@ const AdvertiseTab = ({ seller }) => {
             className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-sm"
           />
         </div>
+
         <div>
-          <label className="text-sm font-medium text-gray-700">Link (optional)</label>
-          <input
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-            placeholder="Defaults to your shop page if left blank"
-            className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-sm"
-          />
+          <label className="text-sm font-medium text-gray-700">Redirect on click</label>
+          <p className="text-xs text-gray-400 mt-0.5 mb-2">Send shoppers to your shop or one of your products when they tap the ad.</p>
+
+          <div className="flex gap-2 mb-3">
+            {[
+              { key: 'none', label: 'None' },
+              { key: 'shop', label: 'My Shop' },
+              { key: 'product', label: 'My Product' },
+            ].map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  if (opt.key === 'none') { clearLink(); return; }
+                  setLinkType(opt.key);
+                  setPickerOpen(true);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                  linkType === opt.key
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-purple-300'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {linkType !== 'none' && (
+            <div className="space-y-2">
+              {linkTarget ? (
+                <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50">
+                  <div className="w-9 h-9 rounded-lg overflow-hidden bg-white border border-gray-200 flex-shrink-0">
+                    {linkTarget.image && <img src={linkTarget.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium truncate flex-1">{linkTarget.name}</span>
+                  <button type="button" onClick={() => setPickerOpen(true)} className="text-xs text-purple-600 font-semibold">
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="w-full px-3 py-2 rounded-xl border-2 border-dashed border-purple-200 text-purple-500 text-sm font-medium hover:border-purple-400"
+                >
+                  Select a {linkType === 'shop' ? 'shop' : 'product'}…
+                </button>
+              )}
+
+              {pickerOpen && (
+                <div className="border border-gray-200 rounded-xl p-2 space-y-2 bg-white">
+                  <input
+                    autoFocus
+                    value={pickerSearch}
+                    onChange={(e) => setPickerSearch(e.target.value)}
+                    placeholder={`Search your ${linkType === 'shop' ? 'shops' : 'products'}…`}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-300 text-sm"
+                  />
+                  <div className="max-h-56 overflow-y-auto space-y-1">
+                    {pickerResults.length === 0 ? (
+                      <p className="text-xs text-gray-400 text-center py-4">
+                        No {linkType === 'shop' ? 'shops' : 'products'} found
+                      </p>
+                    ) : (
+                      pickerResults.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => selectLinkTarget(linkType, item)}
+                          className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-purple-50 text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+                          </div>
+                          <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <button type="button" onClick={() => setPickerOpen(false)} className="text-xs text-gray-400 hover:text-gray-600">
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
