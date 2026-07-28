@@ -150,24 +150,12 @@ const AdvertisementCarousel = () => {
 
       <style jsx>{`
         @keyframes slideInFromRight {
-          from {
-            transform: translateX(calc(100% * var(--dir)));
-            opacity: 0.6;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
+          from { transform: translateX(calc(100% * var(--dir))); }
+          to { transform: translateX(0); }
         }
         @keyframes slideOutToLeft {
-          from {
-            transform: translateX(0);
-            opacity: 1;
-          }
-          to {
-            transform: translateX(calc(-35% * var(--dir)));
-            opacity: 0;
-          }
+          from { transform: translateX(0); }
+          to { transform: translateX(calc(-100% * var(--dir))); }
         }
         @keyframes fillBar {
           from { width: 0%; }
