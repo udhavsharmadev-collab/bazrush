@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDE_DURATION = 4000;
+const TRANSITION_DURATION = 800; // ms — how long the slide-in/out animation takes
 
 const AdvertisementCarousel = () => {
   const [ads, setAds] = useState([]);
@@ -31,7 +32,7 @@ const AdvertisementCarousel = () => {
     setActiveImg(nextImg);
 
     clearTimeout(slideTimeoutRef.current);
-    slideTimeoutRef.current = setTimeout(() => setPrevSlide(null), 500);
+    slideTimeoutRef.current = setTimeout(() => setPrevSlide(null), TRANSITION_DURATION);
   };
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const AdvertisementCarousel = () => {
               src={prevSlide.img.imageId}
               alt=""
               className="absolute inset-0 w-full h-full object-cover slide-out"
-              style={{ '--dir': direction }}
+              style={{ '--dir': direction, animationDuration: `${TRANSITION_DURATION}ms` }}
             />
           )}
           <img
@@ -101,7 +102,7 @@ const AdvertisementCarousel = () => {
             src={img.imageId}
             alt={ad.title || 'Featured shop'}
             className={`absolute inset-0 w-full h-full object-cover ${prevSlide ? 'slide-in' : ''}`}
-            style={{ '--dir': direction }}
+            style={{ '--dir': direction, animationDuration: `${TRANSITION_DURATION}ms` }}
           />
         </a>
 
@@ -149,22 +150,38 @@ const AdvertisementCarousel = () => {
 
       <style jsx>{`
         @keyframes slideInFromRight {
-          from { transform: translateX(calc(100% * var(--dir))); }
-          to { transform: translateX(0); }
+          from {
+            transform: translateX(calc(100% * var(--dir)));
+            opacity: 0.6;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
         @keyframes slideOutToLeft {
-          from { transform: translateX(0); }
-          to { transform: translateX(calc(-100% * var(--dir))); }
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(calc(-35% * var(--dir)));
+            opacity: 0;
+          }
         }
         @keyframes fillBar {
           from { width: 0%; }
           to { width: 100%; }
         }
         .slide-in {
-          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          animation-name: slideInFromRight;
+          animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+          animation-fill-mode: forwards;
         }
         .slide-out {
-          animation: slideOutToLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          animation-name: slideOutToLeft;
+          animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+          animation-fill-mode: forwards;
         }
         .progress-fill {
           width: 0%;
