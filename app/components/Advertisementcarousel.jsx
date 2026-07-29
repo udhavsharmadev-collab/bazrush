@@ -131,7 +131,9 @@ const AdvertisementCarousel = () => {
             <button
               key={i}
               onClick={() => goToImg(i)}
-              className="relative h-1 w-6 rounded-full bg-purple-100 overflow-hidden"
+              className={`relative h-1 rounded-full bg-purple-100 overflow-hidden transition-all duration-500 ease-out ${
+                i === activeImg ? 'w-10' : 'w-6'
+              }`}
               aria-label={`Go to image ${i + 1}`}
             >
               {i === activeImg ? (
