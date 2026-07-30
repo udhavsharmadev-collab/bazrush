@@ -199,14 +199,14 @@ const AdvertiseTab = ({ seller }) => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 px-4 sm:px-6 lg:px-0">
       <div className="flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-purple-100 text-purple-600">
           <Megaphone className="w-5 h-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-gray-800">Advertise</h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 break-words">
             Put your shop in the homepage featured carousel with a few images.
           </p>
         </div>
@@ -219,7 +219,7 @@ const AdvertiseTab = ({ seller }) => {
       )}
 
       {/* Live preview — how this'll look cycling on the homepage */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 space-y-3">
         <p className="font-medium text-gray-800">Preview</p>
         <div className="relative rounded-xl overflow-hidden aspect-[16/7] bg-gray-100 border border-gray-200">
           {images.length > 0 ? (
@@ -254,7 +254,7 @@ const AdvertiseTab = ({ seller }) => {
       </div>
 
       {/* Active toggle */}
-      <div className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
         <div>
           <p className="font-medium text-gray-800">Show on homepage</p>
           <p className="text-sm text-gray-500">Turn this off any time to pull your banner down.</p>
@@ -271,13 +271,13 @@ const AdvertiseTab = ({ seller }) => {
       </div>
 
       {/* Images */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between">
           <p className="font-medium text-gray-800">Carousel images</p>
           <span className="text-xs text-gray-400">{images.length}/{MAX_IMAGES}</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {images.map((img, index) => (
             <div key={img.imageId} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
               
@@ -324,7 +324,7 @@ const AdvertiseTab = ({ seller }) => {
       </div>
 
       {/* Title & link */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 space-y-4">
         <div>
           <label className="text-sm font-medium text-gray-700">Caption (optional)</label>
           <input
@@ -339,7 +339,7 @@ const AdvertiseTab = ({ seller }) => {
           <label className="text-sm font-medium text-gray-700">Redirect on click</label>
           <p className="text-xs text-gray-400 mt-0.5 mb-2">Send shoppers to your shop or one of your products when they tap the ad.</p>
 
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             {[
               { key: 'none', label: 'None' },
               { key: 'shop', label: 'My Shop' },
